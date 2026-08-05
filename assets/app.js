@@ -8,10 +8,17 @@ const state = {
   byId: new Map(),      // id -> person
   adminKey: sessionStorage.getItem('sbb_admin_key') || null,
   editingId: null,      // id yang sedang diedit di form (null = tambah baru)
+  linkBack: null,       // { personId, field } — untuk tombol "Tambah Ayah/Ibu"
+  collapsed: new Set(), // id anggota yang cabang keturunannya sedang disembunyikan
+  zoom: { scale: 1, x: 0, y: 0 },
 };
+
+const ZOOM_MIN = 0.3;
+const ZOOM_MAX = 2.5;
 
 const el = (sel, root=document) => root.querySelector(sel);
 const elAll = (sel, root=document) => [...root.querySelectorAll(sel)];
+const clamp = (n, min, max) => Math.min(max, Math.max(min, n));
 
 /* ---------------------------------------------------------------- INIT */
 document.addEventListener('DOMContentLoaded', () => {
@@ -21,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.title = CONFIG.APP_NAME;
 
   bindUI();
+  bindZoomPan();
   loadData();
 });
 
@@ -34,6 +42,140 @@ function bindUI(){
   el('#genderSelect').addEventListener('change', onGenderChange);
   el('#photoFile').addEventListener('change', onPhotoFileChange);
   el('#btnRemovePhoto').addEventListener('click', () => setPhotoPreview(''));
+}
+
+/* ---------------------------------------------------------------- ZOOM & PAN */
+function applyZoom(){
+  el('#treeRoot').style.transform = `translate(${state.zoom.x}px, ${state.zoom.y}px) scale(${state.zoom.scale})`;
+}
+
+function zoomAtPoint(px, py, factor){
+  const old = state.zoom.scale;
+  const next = clamp(old * factor, ZOOM_MIN, ZOOM_MAX);
+  const applied = next / old;
+  state.zoom.x = px - (px - state.zoom.x) * applied;
+  state.zoom.y = py - (py - state.zoom.y) * applied;
+  state.zoom.scale = next;
+  applyZoom();
+}
+
+function zoomByButton(factor){
+  const wrap = el('#treeWrap');
+  const rect = wrap.getBoundingClientRect();
+  zoomAtPoint(rect.width / 2, rect.height / 2, factor);
+}
+
+/** Sesuaikan skala & posisi awal agar seluruh bagan pas di layar (terutama HP). */
+function fitToView(){
+  requestAnimationFrame(() => {
+    const wrap = el('#treeWrap');
+    const root = el('#treeRoot');
+    if(!wrap || !root) return;
+    root.style.transform = 'translate(0px,0px) scale(1)';
+    const contentWidth = root.scrollWidth;
+    const contentHeight = root.scrollHeight;
+    const wrapWidth = wrap.clientWidth;
+    const wrapHeight = wrap.clientHeight;
+    let scale = 1;
+    if(contentWidth > wrapWidth) scale = Math.max(ZOOM_MIN, (wrapWidth / contentWidth) * 0.94);
+    if(contentHeight * scale > wrapHeight) scale = Math.max(ZOOM_MIN, Math.min(scale, (wrapHeight / contentHeight) * 0.96));
+    const x = Math.max(10, (wrapWidth - contentWidth * scale) / 2);
+    const y = 14;
+    state.zoom = { scale, x, y };
+    applyZoom();
+  });
+}
+
+/** Geser tampilan agar sebuah kartu berada di tengah layar (dipakai oleh pencarian). */
+function panToElement(cardEl){
+  const wrap = el('#treeWrap');
+  const wrapRect = wrap.getBoundingClientRect();
+  const cardRect = cardEl.getBoundingClientRect();
+  const dx = (wrapRect.left + wrapRect.width / 2) - (cardRect.left + cardRect.width / 2);
+  const dy = (wrapRect.top + wrapRect.height / 2) - (cardRect.top + cardRect.height / 2);
+  state.zoom.x += dx;
+  state.zoom.y += dy;
+  applyZoom();
+}
+
+function bindZoomPan(){
+  const wrap = el('#treeWrap');
+  const hint = el('#zoomHint');
+  el('#btnZoomIn').addEventListener('click', () => zoomByButton(1.25));
+  el('#btnZoomOut').addEventListener('click', () => zoomByButton(1/1.25));
+  el('#btnZoomReset').addEventListener('click', fitToView);
+
+  const pointers = new Map();
+  let panStart = null;
+  let pinchStart = null;
+
+  const hideHint = () => hint?.classList.add('fade');
+
+  wrap.addEventListener('pointerdown', (e) => {
+    if(e.target.closest('.zoom-controls')) return;
+    wrap.setPointerCapture(e.pointerId);
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    hideHint();
+    if(pointers.size === 1){
+      const p = [...pointers.values()][0];
+      panStart = { x: p.x, y: p.y, zx: state.zoom.x, zy: state.zoom.y };
+      wrap.classList.add('grabbing');
+    } else if(pointers.size === 2){
+      panStart = null;
+      const [a, b] = [...pointers.values()];
+      const rect = wrap.getBoundingClientRect();
+      pinchStart = {
+        dist: Math.hypot(a.x - b.x, a.y - b.y),
+        scale: state.zoom.scale,
+        midX: (a.x + b.x) / 2 - rect.left,
+        midY: (a.y + b.y) / 2 - rect.top,
+        zx: state.zoom.x, zy: state.zoom.y,
+      };
+    }
+  });
+
+  wrap.addEventListener('pointermove', (e) => {
+    if(!pointers.has(e.pointerId)) return;
+    pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if(pointers.size === 1 && panStart){
+      const p = [...pointers.values()][0];
+      state.zoom.x = panStart.zx + (p.x - panStart.x);
+      state.zoom.y = panStart.zy + (p.y - panStart.y);
+      applyZoom();
+    } else if(pointers.size === 2 && pinchStart){
+      const [a, b] = [...pointers.values()];
+      const dist = Math.hypot(a.x - b.x, a.y - b.y);
+      const next = clamp(pinchStart.scale * (dist / pinchStart.dist), ZOOM_MIN, ZOOM_MAX);
+      const applied = next / pinchStart.scale;
+      state.zoom.x = pinchStart.midX - (pinchStart.midX - pinchStart.zx) * applied;
+      state.zoom.y = pinchStart.midY - (pinchStart.midY - pinchStart.zy) * applied;
+      state.zoom.scale = next;
+      applyZoom();
+    }
+  });
+
+  function endPointer(e){
+    pointers.delete(e.pointerId);
+    if(pointers.size === 0){
+      panStart = null; pinchStart = null;
+      wrap.classList.remove('grabbing');
+    } else if(pointers.size === 1){
+      const p = [...pointers.values()][0];
+      panStart = { x: p.x, y: p.y, zx: state.zoom.x, zy: state.zoom.y };
+      pinchStart = null;
+    }
+  }
+  wrap.addEventListener('pointerup', endPointer);
+  wrap.addEventListener('pointercancel', endPointer);
+  wrap.addEventListener('pointerleave', (e) => { if(pointers.has(e.pointerId)) endPointer(e); });
+
+  wrap.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    hideHint();
+    const rect = wrap.getBoundingClientRect();
+    const factor = e.deltaY < 0 ? 1.12 : 1/1.12;
+    zoomAtPoint(e.clientX - rect.left, e.clientY - rect.top, factor);
+  }, { passive: false });
 }
 
 /* ---------------------------------------------------------------- DATA */
@@ -82,6 +224,7 @@ function renderTree(){
 
   if(state.people.length === 0){
     root.innerHTML = `<div class="empty-state"><b>Silsilah masih kosong</b>Klik "Tambah Anggota" untuk menambahkan orang pertama.</div>`;
+    fitToView();
     return;
   }
 
@@ -103,6 +246,7 @@ function renderTree(){
 
   if(forest.children.length === 0){
     root.innerHTML = `<div class="empty-state"><b>Struktur belum lengkap</b>Periksa kolom Ayah/Ibu — mungkin ada referensi ID yang tidak ditemukan.</div>`;
+    fitToView();
     return;
   }
 
@@ -111,6 +255,7 @@ function renderTree(){
   badge.textContent = 'Generasi Awal';
   root.appendChild(badge);
   root.appendChild(forest);
+  fitToView();
 }
 
 function buildCoupleBlock(person, visited, depth){
@@ -144,11 +289,29 @@ function buildCoupleBlock(person, visited, depth){
   if(children.length){
     const wrap = document.createElement('div');
     wrap.className = 'children-wrap';
+    wrap.dataset.personId = person.id;
+    const isCollapsed = state.collapsed.has(person.id);
+    if(isCollapsed) wrap.classList.add('collapsed');
+
     const badge = document.createElement('div');
     badge.className = 'gen-badge';
     badge.style.marginBottom = '18px';
     badge.textContent = `Generasi ${depth + 1}`;
     wrap.appendChild(badge);
+
+    const toggleBtn = document.createElement('button');
+    toggleBtn.type = 'button';
+    toggleBtn.className = 'branch-toggle' + (isCollapsed ? ' collapsed' : '');
+    toggleBtn.title = isCollapsed ? `Tampilkan ${children.length} keturunan` : 'Sembunyikan cabang ini';
+    toggleBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg><span class="count">${children.length}</span>`;
+    toggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const nowCollapsed = wrap.classList.toggle('collapsed');
+      toggleBtn.classList.toggle('collapsed', nowCollapsed);
+      toggleBtn.title = nowCollapsed ? `Tampilkan ${children.length} keturunan` : 'Sembunyikan cabang ini';
+      if(nowCollapsed) state.collapsed.add(person.id); else state.collapsed.delete(person.id);
+    });
+    wrap.appendChild(toggleBtn);
 
     const childrenRow = document.createElement('div');
     childrenRow.className = 'children' + (children.length===1 ? ' single' : '');
@@ -203,13 +366,26 @@ function formatYears(p){
 /* ---------------------------------------------------------------- SEARCH */
 function onSearch(e){
   const q = e.target.value.trim().toLowerCase();
+  let target = null;
   elAll('.card').forEach(card => {
     const id = card.dataset.id;
     const p = state.byId.get(id);
     const match = q.length > 1 && p && p.nama.toLowerCase().includes(q);
     card.classList.toggle('highlight', match);
-    if(match) card.scrollIntoView({behavior:'smooth', block:'center', inline:'center'});
+    if(match && !target) target = card;
   });
+  if(target){
+    // buka kembali cabang yang tersembunyi agar kartu yang dicari terlihat
+    let node = target.closest('.children-wrap.collapsed');
+    while(node){
+      node.classList.remove('collapsed');
+      const btn = node.querySelector('.branch-toggle');
+      if(btn) btn.classList.remove('collapsed');
+      state.collapsed.delete(node.dataset.personId);
+      node = target.closest('.children-wrap.collapsed');
+    }
+    requestAnimationFrame(() => panToElement(target));
+  }
 }
 
 /* ---------------------------------------------------------------- DETAIL MODAL */
@@ -467,14 +643,17 @@ async function ensureAdminKey(){
 /* ---------------------------------------------------------------- UI HELPERS */
 function showLoader(){
   el('#treeRoot').innerHTML = `<div class="loader"><div class="spin"></div> Memuat silsilah…</div>`;
+  fitToView();
 }
 function renderError(msg){
   el('#treeRoot').innerHTML = `<div class="empty-state"><b>Gagal memuat data</b>${escapeHtml(msg)}</div>`;
+  fitToView();
 }
 function renderSetupNotice(){
   el('#treeRoot').innerHTML = `<div class="empty-state"><b>Belum terhubung ke backend</b>
     Buka <code>assets/config.js</code> dan isi <code>API_URL</code> dengan URL Web App Google Apps Script kamu.
     Lihat README.md bagian "Setup Backend".</div>`;
+  fitToView();
 }
 let toastTimer;
 function toast(msg){
