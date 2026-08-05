@@ -29,6 +29,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   bindUI();
   bindZoomPan();
+  bindBottomNav();
   loadData();
 });
 
@@ -42,6 +43,19 @@ function bindUI(){
   el('#genderSelect').addEventListener('change', onGenderChange);
   el('#photoFile').addEventListener('change', onPhotoFileChange);
   el('#btnRemovePhoto').addEventListener('click', () => setPhotoPreview(''));
+}
+
+function bindBottomNav(){
+  el('#navFit')?.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    fitToView();
+  });
+  el('#navSearch')?.addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    setTimeout(() => el('#searchInput')?.focus(), 350);
+  });
+  el('#navAdd')?.addEventListener('click', () => openForm(null));
+  el('#navRefresh')?.addEventListener('click', loadData);
 }
 
 /* ---------------------------------------------------------------- ZOOM & PAN */
