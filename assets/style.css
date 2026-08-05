@@ -13,6 +13,7 @@
   --bg-2:#2b1512;
   --bg-card:#2f1815;
   --line: rgba(232,184,75,.28);
+  --tree-line: rgba(232,184,75,.6);
 
   --gold-1:#f8e3a3;
   --gold-2:#e8b84b;
@@ -173,7 +174,7 @@ button, input, select, textarea{ font-family:inherit; }
 }
 
 .forest{
-  display:flex; gap:64px; align-items:flex-start; justify-content:center;
+  display:flex; gap:90px; align-items:flex-start; justify-content:center;
   flex-wrap:wrap;
 }
 
@@ -184,11 +185,11 @@ button, input, select, textarea{ font-family:inherit; }
   position:relative;
 }
 
-/* connector between husband & wife */
+/* connector between husband & wife — dibuat rapat agar kontras dgn jarak antar saudara */
 .knot{
-  width:34px; height:34px;
+  width:30px; height:30px;
   display:flex; align-items:center; justify-content:center;
-  margin:0 -6px;
+  margin:0 -13px;
   z-index:2;
   filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));
 }
@@ -277,29 +278,32 @@ button, input, select, textarea{ font-family:inherit; }
 .photo-upload .remove-photo:hover{ color:var(--rose-2); }
 
 /* children connectors (simple org-chart lines) */
-.children-wrap{ position:relative; padding-top:38px; }
+.children-wrap{ position:relative; padding-top:40px; }
 .children-wrap::before{
   content:"";
-  position:absolute; top:0; left:50%;
-  width:1px; height:38px;
-  background:var(--line);
+  position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:2.5px; height:40px;
+  background:var(--tree-line);
+  border-radius:2px;
 }
 .children{
-  display:flex; gap:40px; position:relative;
+  display:flex; gap:76px; position:relative;
   padding-top:0;
 }
 .children::before{
   content:"";
-  position:absolute; top:0; left:0; right:0; height:1px;
-  background:var(--line);
+  position:absolute; top:0; left:0; right:0; height:2.5px;
+  background:var(--tree-line);
   margin:0 auto;
+  border-radius:2px;
 }
-.child-branch{ position:relative; padding-top:38px; }
+.child-branch{ position:relative; padding-top:40px; }
 .child-branch::before{
   content:"";
-  position:absolute; top:0; left:50%;
-  width:1px; height:38px;
-  background:var(--line);
+  position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:2.5px; height:40px;
+  background:var(--tree-line);
+  border-radius:2px;
 }
 .children.single::before{ display:none; }
 
@@ -418,7 +422,8 @@ footer{
   .card{ width:140px; padding:12px 8px 14px; }
   .card .frame{ width:60px; height:60px; }
   .card .name{ font-size:15px; }
-  .forest{ gap:32px; }
-  .children{ gap:20px; }
+  .forest{ gap:48px; }
+  .children{ gap:36px; }
+  .knot{ width:24px; height:24px; margin:0 -10px; }
   .form-grid{ grid-template-columns:1fr; }
 }
