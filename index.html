@@ -65,9 +65,17 @@
             <input type="text" name="pekerjaan" placeholder="Contoh: Petani">
           </div>
           <div class="full">
-            <label>URL Foto</label>
-            <input type="url" name="foto" placeholder="https://...">
-            <div class="field-hint">Tempel link foto (Google Drive/Photos, pastikan bisa diakses publik).</div>
+            <label>Foto</label>
+            <div class="photo-upload">
+              <div class="preview" id="photoPreview"><img id="photoPreviewImg" alt="Pratinjau foto"></div>
+              <div class="actions">
+                <label class="file-label" for="photoFile">Pilih Foto…</label>
+                <input type="file" id="photoFile" accept="image/*">
+                <button type="button" class="remove-photo" id="btnRemovePhoto">Hapus foto</button>
+              </div>
+              <input type="hidden" name="foto" id="fotoField">
+            </div>
+            <div class="field-hint">Foto otomatis dipotong persegi &amp; dikecilkan sebelum disimpan.</div>
           </div>
           <div>
             <label>Tempat Lahir</label>

@@ -32,6 +32,8 @@ function bindUI(){
   el('#detailOverlay').addEventListener('click', e => { if(e.target.id==='detailOverlay') closeDetail(); });
   el('#personForm').addEventListener('submit', onSubmitForm);
   el('#genderSelect').addEventListener('change', onGenderChange);
+  el('#photoFile').addEventListener('change', onPhotoFileChange);
+  el('#btnRemovePhoto').addEventListener('click', () => setPhotoPreview(''));
 }
 
 /* ---------------------------------------------------------------- DATA */
@@ -180,13 +182,12 @@ function buildCard(person){
   const card = document.createElement('div');
   card.className = `card ${person.gender === 'P' ? 'female' : 'male'}`;
   card.dataset.id = person.id;
-  const photo = person.foto || (person.gender === 'P' ? CONFIG.DEFAULT_PHOTO_FEMALE : CONFIG.DEFAULT_PHOTO_MALE);
+  const photo = person.foto || CONFIG.DEFAULT_PHOTO;
   const years = formatYears(person);
   card.innerHTML = `
-    <div class="frame"><img src="${escapeAttr(photo)}" alt="${escapeAttr(person.nama)}" loading="lazy" onerror="this.src='${person.gender==='P'?CONFIG.DEFAULT_PHOTO_FEMALE:CONFIG.DEFAULT_PHOTO_MALE}'"></div>
+    <div class="frame"><img src="${escapeAttr(photo)}" alt="${escapeAttr(person.nama)}" loading="lazy" onerror="this.src='${CONFIG.DEFAULT_PHOTO}'"></div>
     <div class="name">${escapeHtml(person.nama)}</div>
     <div class="meta">${years}</div>
-    <span class="tag">${person.gender === 'P' ? 'Istri / Anak Perempuan' : 'Suami / Anak Laki-laki'}</span>
   `;
   card.addEventListener('click', () => openDetail(person.id));
   return card;
@@ -214,14 +215,14 @@ function onSearch(e){
 function openDetail(id){
   const p = state.byId.get(id);
   if(!p) return;
-  const photo = p.foto || (p.gender === 'P' ? CONFIG.DEFAULT_PHOTO_FEMALE : CONFIG.DEFAULT_PHOTO_MALE);
+  const photo = p.foto || CONFIG.DEFAULT_PHOTO;
   const spouse = p.pasangan ? state.byId.get(p.pasangan) : null;
   const ayah = p.ayah ? state.byId.get(p.ayah) : null;
   const ibu = p.ibu ? state.byId.get(p.ibu) : null;
 
   el('#detailBody').innerHTML = `
     <div class="detail-head">
-      <div class="frame"><img src="${escapeAttr(photo)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.src='${p.gender==='P'?CONFIG.DEFAULT_PHOTO_FEMALE:CONFIG.DEFAULT_PHOTO_MALE}'"></div>
+      <div class="frame"><img src="${escapeAttr(photo)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.src='${CONFIG.DEFAULT_PHOTO}'"></div>
       <div>
         <h2>${escapeHtml(p.nama)}</h2>
         <span class="tag">${p.gender==='P'?'Perempuan':'Laki-laki'}</span>
@@ -238,6 +239,12 @@ function openDetail(id){
       ${row('Ibu', ibu ? ibu.nama : '')}
       ${row('Catatan', p.catatan)}
     </div>
+    <div class="relation-actions">
+      <button class="btn ghost small" id="btnAddChild">+ Tambah Anak</button>
+      ${!p.pasangan ? `<button class="btn ghost small" id="btnAddSpouse">+ Tambah Pasangan</button>` : ''}
+      ${!p.ayah ? `<button class="btn ghost small" id="btnAddFather">+ Tambah Ayah</button>` : ''}
+      ${!p.ibu ? `<button class="btn ghost small" id="btnAddMother">+ Tambah Ibu</button>` : ''}
+    </div>
     <div class="modal-actions">
       <button class="btn ghost small" id="btnEditPerson">Edit</button>
       <button class="btn danger small" id="btnDeletePerson">Hapus</button>
@@ -245,6 +252,35 @@ function openDetail(id){
   `;
   el('#btnEditPerson').addEventListener('click', () => { closeDetail(); openForm(p.id); });
   el('#btnDeletePerson').addEventListener('click', () => deletePerson(p.id));
+
+  el('#btnAddChild')?.addEventListener('click', () => {
+    closeDetail();
+    const preset = { titleSuffix: `(Anak dari ${p.nama})` };
+    if(p.gender === 'L') preset.ayah = p.id; else preset.ibu = p.id;
+    if(spouse){ if(spouse.gender === 'L') preset.ayah = spouse.id; else preset.ibu = spouse.id; }
+    openForm(null, preset);
+  });
+  el('#btnAddSpouse')?.addEventListener('click', () => {
+    closeDetail();
+    openForm(null, { titleSuffix: `(Pasangan dari ${p.nama})`, pasangan: p.id, gender: p.gender === 'L' ? 'P' : 'L' });
+  });
+  el('#btnAddFather')?.addEventListener('click', () => {
+    closeDetail();
+    openForm(null, {
+      titleSuffix: `(Ayah dari ${p.nama})`, gender: 'L',
+      pasangan: ibu ? ibu.id : '',
+      linkBack: { personId: p.id, field: 'ayah' },
+    });
+  });
+  el('#btnAddMother')?.addEventListener('click', () => {
+    closeDetail();
+    openForm(null, {
+      titleSuffix: `(Ibu dari ${p.nama})`, gender: 'P',
+      pasangan: ayah ? ayah.id : '',
+      linkBack: { personId: p.id, field: 'ibu' },
+    });
+  });
+
   el('#detailOverlay').classList.add('open');
 }
 function row(label, value){
@@ -254,28 +290,83 @@ function row(label, value){
 function closeDetail(){ el('#detailOverlay').classList.remove('open'); }
 
 /* ---------------------------------------------------------------- FORM (ADD/EDIT) */
-function openForm(id){
+function openForm(id, preset){
   state.editingId = id;
+  state.linkBack = preset?.linkBack || null;
   const p = id ? state.byId.get(id) : null;
-  el('#formTitle').textContent = p ? 'Edit Anggota' : 'Tambah Anggota';
+  el('#formTitle').textContent = (p ? 'Edit Anggota' : 'Tambah Anggota') + (preset?.titleSuffix ? ' ' + preset.titleSuffix : '');
   const f = el('#personForm');
   f.reset();
   f.nama.value = p?.nama || '';
-  f.gender.value = p?.gender || 'L';
-  f.foto.value = p?.foto || '';
+  f.gender.value = p?.gender || preset?.gender || 'L';
+  setPhotoPreview(p?.foto || '');
   f.tempatLahir.value = p?.tempatLahir || '';
   f.tglLahir.value = p?.tglLahir || '';
   f.tglWafat.value = p?.tglWafat || '';
   f.pekerjaan.value = p?.pekerjaan || '';
   f.alamat.value = p?.alamat || '';
   f.catatan.value = p?.catatan || '';
-  fillPersonSelect(f.pasangan, p?.pasangan, id);
-  fillPersonSelect(f.ayah, p?.ayah, id, 'L');
-  fillPersonSelect(f.ibu, p?.ibu, id, 'P');
+  fillPersonSelect(f.pasangan, p?.pasangan ?? preset?.pasangan, id);
+  fillPersonSelect(f.ayah, p?.ayah ?? preset?.ayah, id, 'L');
+  fillPersonSelect(f.ibu, p?.ibu ?? preset?.ibu, id, 'P');
   el('#formOverlay').classList.add('open');
 }
-function closeForm(){ el('#formOverlay').classList.remove('open'); state.editingId = null; }
+function closeForm(){ el('#formOverlay').classList.remove('open'); state.editingId = null; state.linkBack = null; }
 function onGenderChange(){}
+
+/* ---------------------------------------------------------------- PHOTO UPLOAD */
+function setPhotoPreview(dataUrlOrEmpty){
+  el('#fotoField').value = dataUrlOrEmpty || '';
+  el('#photoPreviewImg').src = dataUrlOrEmpty || CONFIG.DEFAULT_PHOTO;
+}
+
+async function onPhotoFileChange(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  if(!file.type.startsWith('image/')){ toast('File harus berupa gambar'); return; }
+  try{
+    const dataUrl = await compressImage(file, CONFIG.PHOTO_MAX_SIZE, CONFIG.PHOTO_QUALITY);
+    setPhotoPreview(dataUrl);
+  }catch(err){
+    console.error(err);
+    toast('Gagal memproses foto: ' + err.message);
+  }finally{
+    e.target.value = '';
+  }
+}
+
+/** Resize foto jadi persegi (crop tengah) & kompres ke JPEG agar muat di sel Google Sheet. */
+function compressImage(file, maxSize, quality){
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(new Error('Tidak bisa membaca file'));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error('Format gambar tidak didukung'));
+      img.onload = () => {
+        const side = Math.min(img.width, img.height);
+        const sx = (img.width - side) / 2;
+        const sy = (img.height - side) / 2;
+        const canvas = document.createElement('canvas');
+        canvas.width = maxSize; canvas.height = maxSize;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, sx, sy, side, side, 0, 0, maxSize, maxSize);
+
+        let q = quality;
+        let dataUrl = canvas.toDataURL('image/jpeg', q);
+        // Turunkan kualitas/ukuran bertahap jika masih terlalu besar untuk sel Sheet (~50.000 karakter)
+        let size = maxSize;
+        while(dataUrl.length > 42000 && (q > 0.35 || size > 120)){
+          if(q > 0.35) q -= 0.1; else { size -= 40; canvas.width = size; canvas.height = size; ctx.drawImage(img, sx, sy, side, side, 0, 0, size, size); }
+          dataUrl = canvas.toDataURL('image/jpeg', q);
+        }
+        resolve(dataUrl);
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
 
 function fillPersonSelect(select, currentVal, excludeId, filterGender){
   select.innerHTML = '<option value="">— Tidak diketahui —</option>' +
@@ -309,6 +400,7 @@ async function onSubmitForm(e){
 
   const action = state.editingId ? 'update' : 'add';
   if(state.editingId) data.id = state.editingId;
+  const linkBack = state.linkBack;
 
   try{
     const result = await callApi(action, data);
@@ -323,6 +415,11 @@ async function onSubmitForm(e){
         await callApi('update', {id: spouse.id, pasangan: result.id});
         await loadData();
       }
+    }
+    // jika dibuat lewat "Tambah Ayah/Ibu", sambungkan balik ke anaknya
+    if(linkBack){
+      await callApi('update', {id: linkBack.personId, [linkBack.field]: result.id});
+      await loadData();
     }
   }catch(err){
     console.error(err);

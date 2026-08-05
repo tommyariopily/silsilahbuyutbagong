@@ -18,7 +18,16 @@ const CONFIG = {
   APP_NAME: "Silsilah Keluarga Buyut Bagong",
   APP_SUBTITLE: "Keluarga Besar Buyut Bagong",
 
-  // Foto default jika anggota belum punya foto
-  DEFAULT_PHOTO_MALE: "https://api.dicebear.com/7.x/personas/svg?seed=laki&backgroundColor=2a1512",
-  DEFAULT_PHOTO_FEMALE: "https://api.dicebear.com/7.x/personas/svg?seed=perempuan&backgroundColor=2a1512",
+  // Foto default jika anggota belum punya foto (silsilase abu-abu sederhana)
+  DEFAULT_PHOTO: "data:image/svg+xml;utf8," + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">' +
+    '<rect width="200" height="200" fill="#d9dbe0"/>' +
+    '<circle cx="100" cy="80" r="36" fill="#8b909c"/>' +
+    '<path d="M34 178c0-48 29.5-84 66-84s66 36 66 84" fill="#8b909c"/>' +
+    '</svg>'
+  ),
+
+  // Ukuran foto tersimpan (upload otomatis di-resize ke persegi ini)
+  PHOTO_MAX_SIZE: 260,
+  PHOTO_QUALITY: 0.75,
 };
