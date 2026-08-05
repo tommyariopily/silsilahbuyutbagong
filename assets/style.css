@@ -523,8 +523,17 @@ footer{
   font-size:10px; letter-spacing:.02em;
   padding:6px 2px 2px;
 }
-.bottom-nav button svg{ width:20px; height:20px; }
-.bottom-nav button:active{ color:var(--gold-1); }
+.bottom-nav a{
+  flex:1;
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  color:var(--cream-dim);
+  text-decoration:none;
+  font-size:10px; letter-spacing:.02em;
+  padding:6px 2px 2px;
+}
+.bottom-nav button svg, .bottom-nav a svg{ width:20px; height:20px; }
+.bottom-nav button:active, .bottom-nav a:active{ color:var(--gold-1); }
+.bottom-nav a.active{ color:var(--gold-1); }
 .bottom-nav button.nav-add{
   position:relative; top:-16px;
   font-size:10.5px;
@@ -542,10 +551,40 @@ footer{
 @media (max-width:640px){
   .bottom-nav{ display:flex; }
   body{ padding-bottom:78px; }
-  .toolbar{ position:sticky; }
+  .tree-wrap{ height:calc(70vh - 20px); }
+
+  /* Header minimalis: logo + judul sejajar, freeze di atas */
+  .site-header{
+    position:sticky; top:0; z-index:40;
+    flex-direction:row; align-items:center; justify-content:flex-start;
+    text-align:left;
+    gap:10px;
+    padding:12px 16px;
+    background:rgba(23,9,8,.97);
+    backdrop-filter:blur(10px);
+  }
+  .site-header .logo{
+    width:34px; height:34px; margin-bottom:0; flex:none;
+    filter:drop-shadow(0 2px 6px rgba(232,184,75,.3));
+  }
+  .site-header h1{
+    font-size:16px; line-height:1.2; letter-spacing:0;
+    text-align:left;
+  }
+  .site-header p{ display:none; }
+
+  /* Kolom pencarian disembunyikan secara default; muncul saat tombol "Cari" di bottom nav ditekan */
+  .toolbar{
+    display:none;
+    position:sticky; top:58px; z-index:35;
+  }
+  .toolbar.mobile-open{ display:flex; }
   .toolbar .btn{ display:none; } /* dipindah ke bottom nav */
   .search-box{ width:100%; }
-  .tree-wrap{ height:calc(70vh - 20px); }
+
+  /* Tombol zoom manual disembunyikan di mobile — sudah cukup dengan cubit/geser & tombol Beranda */
+  .zoom-controls{ display:none; }
+  .zoom-hint{ display:none; }
 }
 
 /* ---------- PWA install banner ---------- */

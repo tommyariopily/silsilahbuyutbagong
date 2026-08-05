@@ -31,7 +31,22 @@ document.addEventListener('DOMContentLoaded', () => {
   bindZoomPan();
   bindBottomNav();
   loadData();
+  handleEntryShortcuts();
 });
+
+/** Menangani tautan pintasan dari halaman lain (mis. kegiatan.html) yang minta buka pencarian/form tambah. */
+function handleEntryShortcuts(){
+  if(sessionStorage.getItem('sbb_open_search') === '1'){
+    sessionStorage.removeItem('sbb_open_search');
+    el('#topToolbar')?.classList.add('mobile-open');
+    setTimeout(() => el('#searchInput')?.focus(), 300);
+  }
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('add') === '1'){
+    setTimeout(() => openForm(null), 300);
+    window.history.replaceState({}, '', window.location.pathname);
+  }
+}
 
 function bindUI(){
   el('#searchInput').addEventListener('input', onSearch);
@@ -51,8 +66,12 @@ function bindBottomNav(){
     fitToView();
   });
   el('#navSearch')?.addEventListener('click', () => {
+    const toolbar = el('#topToolbar');
+    const isOpen = toolbar.classList.toggle('mobile-open');
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    setTimeout(() => el('#searchInput')?.focus(), 350);
+    if(isOpen){
+      setTimeout(() => el('#searchInput')?.focus(), 200);
+    }
   });
   el('#navAdd')?.addEventListener('click', () => openForm(null));
   el('#navRefresh')?.addEventListener('click', loadData);
