@@ -118,24 +118,25 @@ function buildCoupleBlock(person, visited, depth){
   const spouse = person.pasangan && state.byId.get(person.pasangan) ? state.byId.get(person.pasangan) : null;
   if(spouse) visited.add(spouse.id);
 
-  let husband = person.gender === 'L' ? person : spouse;
-  let wife = person.gender === 'P' ? person : spouse;
-  if(!husband && !wife){ husband = person; }
+  // Anggota jalur keturunan (person) selalu di kiri, pasangannya selalu di kanan —
+  // konsisten baik dia laki-laki maupun perempuan, tidak tergantung gender.
+  const left = person;
+  const right = spouse;
 
   const block = document.createElement('div');
   block.className = 'couple-block';
 
   const row = document.createElement('div');
   row.className = 'couple-row';
-  if(husband) row.appendChild(buildCard(husband));
-  if(husband && wife) row.appendChild(buildKnot());
-  if(wife) row.appendChild(buildCard(wife));
+  row.appendChild(buildCard(left));
+  if(right) row.appendChild(buildKnot());
+  if(right) row.appendChild(buildCard(right));
   block.appendChild(row);
 
   // find children of this couple
   const childIds = new Set();
   state.people.forEach(p => {
-    const belongs = [husband?.id, wife?.id].filter(Boolean);
+    const belongs = [left?.id, right?.id].filter(Boolean);
     if(belongs.includes(p.ayah) || belongs.includes(p.ibu)) childIds.add(p.id);
   });
   const children = [...childIds].map(id => state.byId.get(id)).filter(Boolean);
