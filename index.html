@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Silsilah Keluarga Buyut Bagong</title>
+<link rel="icon" href="https://lh3.googleusercontent.com/d/1KrTYDqI1-R5fGsd0PrzCZuMtID2FYDmt">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+  <header class="site-header">
+    <img id="logo" class="logo" alt="Logo Keluarga">
+    <h1 id="appTitle">Silsilah Keluarga Buyut Bagong</h1>
+    <p id="appSubtitle">Keluarga Besar Buyut Bagong</p>
+  </header>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Cari nama anggota keluarga...">
+    </div>
+    <button class="btn" id="btnAdd">+ Tambah Anggota</button>
+    <button class="btn ghost" id="btnRefresh">Muat Ulang</button>
+  </div>
+
+  <main class="tree-wrap">
+    <div class="tree-root" id="treeRoot">
+      <div class="loader"><div class="spin"></div> Memuat silsilah…</div>
+    </div>
+  </main>
+
+  <footer>
+    Aplikasi Silsilah Keluarga Buyut Bagong · data tersimpan di Google Sheets
+  </footer>
+
+  <!-- ============ DETAIL MODAL ============ -->
+  <div class="overlay" id="detailOverlay">
+    <div class="modal">
+      <button class="modal-close" onclick="closeDetail()">&times;</button>
+      <div id="detailBody"></div>
+    </div>
+  </div>
+
+  <!-- ============ FORM MODAL (ADD/EDIT) ============ -->
+  <div class="overlay" id="formOverlay">
+    <div class="modal">
+      <button class="modal-close" onclick="closeForm()">&times;</button>
+      <h2 style="font-family:var(--font-display);color:var(--gold-1);margin-top:0;" id="formTitle">Tambah Anggota</h2>
+      <form id="personForm">
+        <div class="form-grid">
+          <div class="full">
+            <label>Nama Lengkap *</label>
+            <input type="text" name="nama" required placeholder="Contoh: Bagong Suryowidjojo">
+          </div>
+          <div>
+            <label>Jenis Kelamin *</label>
+            <select name="gender" id="genderSelect" required>
+              <option value="L">Laki-laki</option>
+              <option value="P">Perempuan</option>
+            </select>
+          </div>
+          <div>
+            <label>Pekerjaan</label>
+            <input type="text" name="pekerjaan" placeholder="Contoh: Petani">
+          </div>
+          <div class="full">
+            <label>URL Foto</label>
+            <input type="url" name="foto" placeholder="https://...">
+            <div class="field-hint">Tempel link foto (Google Drive/Photos, pastikan bisa diakses publik).</div>
+          </div>
+          <div>
+            <label>Tempat Lahir</label>
+            <input type="text" name="tempatLahir">
+          </div>
+          <div></div>
+          <div>
+            <label>Tanggal Lahir</label>
+            <input type="date" name="tglLahir">
+          </div>
+          <div>
+            <label>Tanggal Wafat</label>
+            <input type="date" name="tglWafat">
+          </div>
+          <div class="full">
+            <label>Alamat</label>
+            <input type="text" name="alamat">
+          </div>
+          <div>
+            <label>Pasangan</label>
+            <select name="pasangan"></select>
+          </div>
+          <div></div>
+          <div>
+            <label>Ayah</label>
+            <select name="ayah"></select>
+          </div>
+          <div>
+            <label>Ibu</label>
+            <select name="ibu"></select>
+          </div>
+          <div class="full">
+            <label>Catatan</label>
+            <textarea name="catatan" placeholder="Cerita, silsilah tambahan, dsb."></textarea>
+          </div>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn ghost small" onclick="closeForm()">Batal</button>
+          <button type="submit" class="btn small">Simpan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="assets/config.js"></script>
+  <script src="assets/app.js"></script>
+</body>
+</html>
