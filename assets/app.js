@@ -112,7 +112,9 @@ function bindZoomPan(){
   const hideHint = () => hint?.classList.add('fade');
 
   wrap.addEventListener('pointerdown', (e) => {
-    if(e.target.closest('.zoom-controls')) return;
+    // jangan mulai geser/pinch kalau yang disentuh adalah tombol/kartu yang bisa diklik —
+    // biarkan elemen itu menangani tap/klik-nya sendiri
+    if(e.target.closest('.zoom-controls, .branch-toggle, .card, button')) return;
     wrap.setPointerCapture(e.pointerId);
     pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
     hideHint();
@@ -181,22 +183,52 @@ function bindZoomPan(){
 /* ---------------------------------------------------------------- DATA */
 async function loadData(){
   showLoader();
-  try{
-    if(!CONFIG.API_URL || CONFIG.API_URL.includes('PASTE_URL')){
-      renderSetupNotice();
-      return;
+  if(!CONFIG.API_URL || CONFIG.API_URL.includes('PASTE_URL')){
+    renderSetupNotice();
+    return;
+  }
+
+  const MAX_ATTEMPTS = 3;
+  let lastErr = null;
+
+  for(let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++){
+    try{
+      const json = await fetchListOnce();
+      if(!json.success) throw new Error(json.message || 'Gagal memuat data');
+      state.people = json.data.map(normalizePerson);
+      state.byId = new Map(state.people.map(p => [p.id, p]));
+      renderTree();
+      return; // berhasil
+    }catch(err){
+      lastErr = err;
+      console.warn(`Percobaan ${attempt}/${MAX_ATTEMPTS} gagal:`, err.message);
+      if(attempt < MAX_ATTEMPTS){
+        showLoader(); // tetap tampilkan "memuat" selama masih mencoba ulang
+        await sleep(700 * attempt); // jeda makin lama tiap percobaan
+      }
     }
-    const res = await fetch(`${CONFIG.API_URL}?action=list`);
-    const json = await res.json();
-    if(!json.success) throw new Error(json.message || 'Gagal memuat data');
-    state.people = json.data.map(normalizePerson);
-    state.byId = new Map(state.people.map(p => [p.id, p]));
-    renderTree();
-  }catch(err){
-    console.error(err);
-    renderError(err.message);
+  }
+
+  console.error(lastErr);
+  renderError(
+    lastErr?.message?.includes('JSON') || lastErr?.message?.includes('<')
+      ? 'Server Google Apps Script belum siap merespons (biasa terjadi saat baru "bangun" dari idle). Coba klik "Muat Ulang".'
+      : lastErr?.message || 'Terjadi kesalahan tak terduga'
+  );
+}
+
+/** Satu kali percobaan ambil data; melempar error yang jelas kalau respons bukan JSON. */
+async function fetchListOnce(){
+  const res = await fetch(`${CONFIG.API_URL}?action=list`, { cache: 'no-store' });
+  const text = await res.text();
+  try{
+    return JSON.parse(text);
+  }catch{
+    throw new Error(`Respons server bukan JSON (status ${res.status}). ${text.slice(0, 60)}`);
   }
 }
+
+function sleep(ms){ return new Promise((resolve) => setTimeout(resolve, ms)); }
 
 function normalizePerson(row){
   return {
