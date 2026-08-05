@@ -5,11 +5,12 @@
    diambil langsung dari jaringan, tidak di-cache, supaya selalu terbaru.
    ===================================================================== */
 
-const CACHE_NAME = 'silsilah-bagong-v1';
+const CACHE_NAME = 'silsilah-bagong-v2';
 
 const APP_SHELL = [
   './',
   './index.html',
+  './kegiatan.html',
   './manifest.webmanifest',
   './assets/style.css',
   './assets/app.js',
