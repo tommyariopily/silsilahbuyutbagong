@@ -26,6 +26,10 @@
     <p id="appSubtitle">Keluarga Besar Buyut Bagong</p>
   </header>
 
+  <button type="button" id="btnPrint" class="print-fab" title="Cetak / Simpan PDF" aria-label="Cetak">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+  </button>
+
   <div class="toolbar" id="topToolbar">
     <div class="search-box">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
@@ -33,6 +37,12 @@
     </div>
     <button class="btn" id="btnAdd">+ Tambah Anggota</button>
     <button class="btn ghost" id="btnRefresh">Muat Ulang</button>
+  </div>
+
+  <!-- hanya tampil saat dicetak -->
+  <div class="print-header" id="printHeader">
+    <div class="print-header-title">Silsilah Keluarga Buyut Bagong</div>
+    <div class="print-header-date" id="printDate"></div>
   </div>
 
   <main class="tree-wrap" id="treeWrap">
