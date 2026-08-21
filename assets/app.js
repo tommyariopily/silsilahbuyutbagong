@@ -9,9 +9,19 @@ const state = {
   adminKey: sessionStorage.getItem('sbb_admin_key') || null,
   editingId: null,      // id yang sedang diedit di form (null = tambah baru)
   linkBack: null,       // { personId, field } — untuk tombol "Tambah Ayah/Ibu"
-  collapsed: new Set(), // id anggota yang cabang keturunannya sedang disembunyikan
+  forceOpen: new Set(), // id anggota yang cabangnya dipaksa terbuka (override default)
+  forceClosed: new Set(), // id anggota yang cabangnya dipaksa tertutup (override default)
   zoom: { scale: 1, x: 0, y: 0 },
 };
+
+/** Secara default, hanya baris anak pertama (generasi 2) yang otomatis terbuka;
+ *  cabang seterusnya tertutup sampai pengguna mengklik tombol untuk membukanya —
+ *  supaya bagan awal tidak memakan ruang berlebihan. */
+function isBranchCollapsed(personId, depth){
+  if(state.forceOpen.has(personId)) return false;
+  if(state.forceClosed.has(personId)) return true;
+  return depth >= 2;
+}
 
 const ZOOM_MIN = 0.3;
 const ZOOM_MAX = 2.5;
@@ -88,6 +98,22 @@ function bindPrint(){
       });
     }
     window.print();
+  });
+
+  // Skala bagan otomatis supaya muat lebar kertas A4, dipicu baik lewat tombol
+  // cetak maupun Ctrl+P bawaan browser.
+  window.addEventListener('beforeprint', () => {
+    const root = el('#treeRoot');
+    if(!root) return;
+    const A4_LANDSCAPE_USABLE_MM = 277; // 297mm - 2×10mm margin
+    const usablePx = A4_LANDSCAPE_USABLE_MM * 3.7795; // ~96dpi
+    const naturalWidth = root.scrollWidth;
+    const factor = naturalWidth > usablePx ? Math.max(0.22, usablePx / naturalWidth) : 1;
+    root.style.zoom = factor; // 'zoom' (bukan transform) ikut memengaruhi ukuran halaman cetak
+  });
+  window.addEventListener('afterprint', () => {
+    const root = el('#treeRoot');
+    if(root) root.style.zoom = '';
   });
 }
 
@@ -378,7 +404,7 @@ function buildCoupleBlock(person, visited, depth){
     const wrap = document.createElement('div');
     wrap.className = 'children-wrap';
     wrap.dataset.personId = person.id;
-    const isCollapsed = state.collapsed.has(person.id);
+    const isCollapsed = isBranchCollapsed(person.id, depth);
     if(isCollapsed) wrap.classList.add('collapsed');
 
     const badge = document.createElement('div');
@@ -397,7 +423,8 @@ function buildCoupleBlock(person, visited, depth){
       const nowCollapsed = wrap.classList.toggle('collapsed');
       toggleBtn.classList.toggle('collapsed', nowCollapsed);
       toggleBtn.title = nowCollapsed ? `Tampilkan ${children.length} keturunan` : 'Sembunyikan cabang ini';
-      if(nowCollapsed) state.collapsed.add(person.id); else state.collapsed.delete(person.id);
+      if(nowCollapsed){ state.forceClosed.add(person.id); state.forceOpen.delete(person.id); }
+      else{ state.forceOpen.add(person.id); state.forceClosed.delete(person.id); }
     });
     wrap.appendChild(toggleBtn);
 
@@ -435,10 +462,8 @@ function buildCard(person){
   const card = document.createElement('div');
   card.className = `card ${person.gender === 'P' ? 'female' : 'male'}`;
   card.dataset.id = person.id;
-  const photo = person.foto || CONFIG.DEFAULT_PHOTO;
   const years = formatYears(person);
   card.innerHTML = `
-    <div class="frame"><img src="${escapeAttr(photo)}" alt="${escapeAttr(person.nama)}" loading="lazy" onerror="this.src='${CONFIG.DEFAULT_PHOTO}'"></div>
     <div class="name">${escapeHtml(person.nama)}</div>
     <div class="meta">${years}</div>
   `;
@@ -475,7 +500,8 @@ function onSearch(e){
     node.classList.remove('collapsed');
     const btn = node.querySelector('.branch-toggle');
     if(btn) btn.classList.remove('collapsed');
-    state.collapsed.delete(node.dataset.personId);
+    state.forceOpen.add(node.dataset.personId);
+    state.forceClosed.delete(node.dataset.personId);
     node = target.closest('.children-wrap.collapsed');
   }
 
