@@ -348,17 +348,13 @@ function renderTree(){
     return !hasParent;
   });
 
-  const forest = document.createElement('div');
-  forest.className = 'forest';
-  forest.appendChild(document.createElement('div')); // spacer (replaced below)
-  forest.innerHTML = '';
-
+  const builtRoots = [];
   roots.forEach(p => {
     if(visited.has(p.id)) return;
-    forest.appendChild(buildCoupleBlock(p, visited, 1));
+    builtRoots.push(buildCoupleBlock(p, visited, 1));
   });
 
-  if(forest.children.length === 0){
+  if(builtRoots.length === 0){
     root.innerHTML = `<div class="empty-state"><b>Struktur belum lengkap</b>Periksa kolom Ayah/Ibu — mungkin ada referensi ID yang tidak ditemukan.</div>`;
     fitToView();
     return;
@@ -368,7 +364,30 @@ function renderTree(){
   badge.className = 'gen-badge';
   badge.textContent = 'Generasi Awal';
   root.appendChild(badge);
-  root.appendChild(forest);
+
+  if(builtRoots.length === 1){
+    // hanya satu leluhur teratas — tampilkan langsung tanpa garis penghubung tambahan
+    const forest = document.createElement('div');
+    forest.className = 'forest';
+    forest.appendChild(builtRoots[0]);
+    root.appendChild(forest);
+  }else{
+    // beberapa "akar" terpisah (belum tentu bersaudara langsung di data) —
+    // tetap disatukan dengan garis horizontal supaya bagan terlihat rapat & tersambung
+    const rootWrap = document.createElement('div');
+    rootWrap.className = 'root-wrap';
+    const row = document.createElement('div');
+    row.className = 'children';
+    builtRoots.forEach((built) => {
+      const branch = document.createElement('div');
+      branch.className = 'child-branch';
+      branch.appendChild(built);
+      row.appendChild(branch);
+    });
+    rootWrap.appendChild(row);
+    root.appendChild(rootWrap);
+  }
+
   fitToView();
 }
 

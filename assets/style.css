@@ -68,20 +68,22 @@ button, input, select, textarea{ font-family:inherit; }
 /* ---------- Header ---------- */
 .site-header{
   position:relative; z-index:2;
-  display:flex; flex-direction:column; align-items:center;
-  text-align:center;
-  padding:48px 20px 30px;
+  display:flex; flex-direction:row; align-items:center; justify-content:center;
+  text-align:left;
+  gap:16px;
+  padding:26px 20px;
   border-bottom:1px solid var(--line);
 }
 .site-header .logo{
-  width:96px; height:96px; object-fit:contain;
+  width:60px; height:60px; object-fit:contain; flex:none;
   filter:drop-shadow(0 6px 18px rgba(232,184,75,.35));
-  margin-bottom:14px;
+  margin-bottom:0;
 }
+.site-header .title-group{ display:flex; flex-direction:column; }
 .site-header h1{
   font-family:var(--font-display);
   font-weight:700;
-  font-size:clamp(21px,6vw,44px);
+  font-size:clamp(21px,4vw,34px);
   line-height:1.15;
   letter-spacing:.02em;
   margin:0;
@@ -89,17 +91,11 @@ button, input, select, textarea{ font-family:inherit; }
   -webkit-background-clip:text; background-clip:text; color:transparent;
 }
 .site-header p{
-  margin:6px 0 0;
+  margin:4px 0 0;
   color:var(--cream-dim);
-  letter-spacing:.18em;
+  letter-spacing:.16em;
   text-transform:uppercase;
-  font-size:12px;
-}
-
-@media (max-width:480px){
-  .site-header{ padding:28px 16px 20px; }
-  .site-header .logo{ width:64px; height:64px; margin-bottom:10px; }
-  .site-header p{ font-size:10px; letter-spacing:.12em; }
+  font-size:11px;
 }
 
 /* ---------- Toolbar ---------- */
@@ -232,9 +228,12 @@ button, input, select, textarea{ font-family:inherit; }
 }
 
 .forest{
-  display:flex; gap:56px; align-items:flex-start; justify-content:center;
+  display:flex; gap:40px; align-items:flex-start; justify-content:center;
   flex-wrap:wrap;
 }
+
+/* Bungkus untuk beberapa "akar" silsilah terpisah — disatukan garis seperti baris anak biasa */
+.root-wrap{ padding-top:18px; }
 
 .couple-block{ display:flex; flex-direction:column; align-items:center; }
 
@@ -391,7 +390,7 @@ button, input, select, textarea{ font-family:inherit; }
 .branch-toggle.collapsed .count{ display:block; }
 
 .children{
-  display:flex; gap:44px; position:relative;
+  display:flex; gap:34px; position:relative;
   padding-top:0;
 }
 .children::before{
@@ -660,6 +659,7 @@ footer{
   .child-branch{ padding-top:24px; }
   .child-branch::before{ height:24px; }
   .tree-root{ gap:28px; padding:26px 24px 70px; }
+  .root-wrap{ padding-top:14px; }
   .form-grid{ grid-template-columns:1fr; }
 }
 
