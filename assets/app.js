@@ -30,6 +30,8 @@ document.addEventListener('DOMContentLoaded', () => {
   bindUI();
   bindZoomPan();
   bindBottomNav();
+  bindPrint();
+  bindResize();
   loadData();
   handleEntryShortcuts();
 });
@@ -75,6 +77,27 @@ function bindBottomNav(){
   });
   el('#navAdd')?.addEventListener('click', () => openForm(null));
   el('#navRefresh')?.addEventListener('click', loadData);
+}
+
+function bindPrint(){
+  el('#btnPrint')?.addEventListener('click', () => {
+    const dateEl = el('#printDate');
+    if(dateEl){
+      dateEl.textContent = 'Dicetak ' + new Date().toLocaleDateString('id-ID', {
+        day: 'numeric', month: 'long', year: 'numeric',
+      });
+    }
+    window.print();
+  });
+}
+
+let resizeTimer;
+function bindResize(){
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(fitToView, 300);
+  });
+  window.addEventListener('orientationchange', () => setTimeout(fitToView, 400));
 }
 
 /* ---------------------------------------------------------------- ZOOM & PAN */
@@ -384,6 +407,7 @@ function buildCoupleBlock(person, visited, depth){
       if(visited.has(child.id)) return;
       const branch = document.createElement('div');
       branch.className = 'child-branch';
+      branch.dataset.personId = child.id;
       branch.appendChild(buildCoupleBlock(child, visited, depth + 1));
       childrenRow.appendChild(branch);
     });
@@ -439,18 +463,65 @@ function onSearch(e){
     card.classList.toggle('highlight', match);
     if(match && !target) target = card;
   });
-  if(target){
-    // buka kembali cabang yang tersembunyi agar kartu yang dicari terlihat
-    let node = target.closest('.children-wrap.collapsed');
-    while(node){
-      node.classList.remove('collapsed');
-      const btn = node.querySelector('.branch-toggle');
-      if(btn) btn.classList.remove('collapsed');
-      state.collapsed.delete(node.dataset.personId);
-      node = target.closest('.children-wrap.collapsed');
-    }
-    requestAnimationFrame(() => panToElement(target));
+
+  if(!target){
+    clearPathHighlight();
+    return;
   }
+
+  // buka kembali cabang yang tersembunyi agar kartu yang dicari terlihat
+  let node = target.closest('.children-wrap.collapsed');
+  while(node){
+    node.classList.remove('collapsed');
+    const btn = node.querySelector('.branch-toggle');
+    if(btn) btn.classList.remove('collapsed');
+    state.collapsed.delete(node.dataset.personId);
+    node = target.closest('.children-wrap.collapsed');
+  }
+
+  pathHighlightTo(target.dataset.id);
+  requestAnimationFrame(() => panToElement(target));
+}
+
+/** Susun rantai leluhur (jalur darah) dari orang yang ditemukan sampai ke akar silsilah. */
+function getAncestorChain(id){
+  const chain = [];
+  const seen = new Set();
+  let current = state.byId.get(id);
+  while(current && !seen.has(current.id)){
+    chain.push(current.id);
+    seen.add(current.id);
+    const parentId = (current.ayah && state.byId.has(current.ayah)) ? current.ayah
+                    : (current.ibu && state.byId.has(current.ibu)) ? current.ibu
+                    : null;
+    current = parentId ? state.byId.get(parentId) : null;
+  }
+  return chain; // [target, orang tua, kakek, ..., leluhur teratas]
+}
+
+/** Nyalakan seluruh jalur silsilah (kartu + garis) dari akar sampai ke orang yang dicari. */
+function pathHighlightTo(targetId){
+  clearPathHighlight();
+  const chain = getAncestorChain(targetId);
+
+  chain.forEach(id => {
+    document.querySelector(`.card[data-id="${id}"]`)?.classList.add('path-active');
+    const person = state.byId.get(id);
+    if(person?.pasangan){
+      document.querySelector(`.card[data-id="${person.pasangan}"]`)?.classList.add('path-active');
+    }
+  });
+
+  for(let i = chain.length - 1; i >= 1; i--){
+    const parentId = chain[i];
+    const childId = chain[i - 1];
+    document.querySelector(`.children-wrap[data-person-id="${parentId}"]`)?.classList.add('path-active');
+    document.querySelector(`.child-branch[data-person-id="${childId}"]`)?.classList.add('path-active');
+  }
+}
+
+function clearPathHighlight(){
+  elAll('.path-active').forEach((elm) => elm.classList.remove('path-active'));
 }
 
 /* ---------------------------------------------------------------- DETAIL MODAL */
