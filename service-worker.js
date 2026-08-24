@@ -5,7 +5,7 @@
    diambil langsung dari jaringan, tidak di-cache, supaya selalu terbaru.
    ===================================================================== */
 
-const CACHE_NAME = 'silsilah-bagong-v2';
+const CACHE_NAME = 'silsilah-bagong-v3';
 
 const APP_SHELL = [
   './',
@@ -16,6 +16,7 @@ const APP_SHELL = [
   './assets/app.js',
   './assets/config.js',
   './assets/pwa.js',
+  './assets/kegiatan.js',
   './assets/icons/icon-72.png',
   './assets/icons/icon-96.png',
   './assets/icons/icon-128.png',
