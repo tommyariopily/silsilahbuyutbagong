@@ -668,7 +668,8 @@ function openForm(id, preset){
   fillPersonSelect(f.pasangan, p?.pasangan ?? preset?.pasangan, id);
   fillPersonSelect(f.ayah, p?.ayah ?? preset?.ayah, id, 'L');
   fillPersonSelect(f.ibu, p?.ibu ?? preset?.ibu, id, 'P');
-  el('#btnSaveAddAnother').style.display = state.childAddPreset ? 'inline-flex' : 'none';
+  const addAnotherBtn = el('#btnSaveAddAnother');
+  if(addAnotherBtn) addAnotherBtn.style.display = state.childAddPreset ? 'inline-flex' : 'none';
   el('#formOverlay').classList.add('open');
 }
 function closeForm(){
