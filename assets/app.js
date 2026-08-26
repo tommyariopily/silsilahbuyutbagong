@@ -9,6 +9,7 @@ const state = {
   adminKey: sessionStorage.getItem('sbb_admin_key') || null,
   editingId: null,      // id yang sedang diedit di form (null = tambah baru)
   linkBack: null,       // { personId, field } — untuk tombol "Tambah Ayah/Ibu"
+  childAddPreset: null, // { ayah, ibu } — aktif saat form dibuka lewat "+ Tambah Anak", untuk tombol "Tambah Lagi"
   forceOpen: new Set(), // id anggota yang cabangnya dipaksa terbuka (override default)
   forceClosed: new Set(), // id anggota yang cabangnya dipaksa tertutup (override default)
   zoom: { scale: 1, x: 0, y: 0 },
@@ -428,7 +429,6 @@ function buildCoupleBlock(person, visited, depth){
 
     const badge = document.createElement('div');
     badge.className = 'gen-badge';
-    badge.style.marginBottom = '18px';
     badge.textContent = `Generasi ${depth + 1}`;
     wrap.appendChild(badge);
 
@@ -613,7 +613,7 @@ function openDetail(id){
 
   el('#btnAddChild')?.addEventListener('click', () => {
     closeDetail();
-    const preset = { titleSuffix: `(Anak dari ${p.nama})` };
+    const preset = { titleSuffix: `(Anak dari ${p.nama})`, isChildAdd: true };
     if(p.gender === 'L') preset.ayah = p.id; else preset.ibu = p.id;
     if(spouse){ if(spouse.gender === 'L') preset.ayah = spouse.id; else preset.ibu = spouse.id; }
     openForm(null, preset);
@@ -651,6 +651,7 @@ function closeDetail(){ el('#detailOverlay').classList.remove('open'); }
 function openForm(id, preset){
   state.editingId = id;
   state.linkBack = preset?.linkBack || null;
+  state.childAddPreset = (!id && preset?.isChildAdd) ? { ayah: preset.ayah, ibu: preset.ibu } : null;
   const p = id ? state.byId.get(id) : null;
   el('#formTitle').textContent = (p ? 'Edit Anggota' : 'Tambah Anggota') + (preset?.titleSuffix ? ' ' + preset.titleSuffix : '');
   const f = el('#personForm');
@@ -667,9 +668,15 @@ function openForm(id, preset){
   fillPersonSelect(f.pasangan, p?.pasangan ?? preset?.pasangan, id);
   fillPersonSelect(f.ayah, p?.ayah ?? preset?.ayah, id, 'L');
   fillPersonSelect(f.ibu, p?.ibu ?? preset?.ibu, id, 'P');
+  el('#btnSaveAddAnother').style.display = state.childAddPreset ? 'inline-flex' : 'none';
   el('#formOverlay').classList.add('open');
 }
-function closeForm(){ el('#formOverlay').classList.remove('open'); state.editingId = null; state.linkBack = null; }
+function closeForm(){
+  el('#formOverlay').classList.remove('open');
+  state.editingId = null;
+  state.linkBack = null;
+  state.childAddPreset = null;
+}
 function onGenderChange(){}
 
 /* ---------------------------------------------------------------- PHOTO UPLOAD */
@@ -736,7 +743,35 @@ function fillPersonSelect(select, currentVal, excludeId, filterGender){
 
 async function onSubmitForm(e){
   e.preventDefault();
-  const f = e.target;
+  const wasEditing = !!state.editingId;
+  const result = await savePersonFromForm(el('#personForm'));
+  if(result?.success){
+    toast(wasEditing ? 'Perubahan disimpan' : 'Anggota ditambahkan');
+    closeForm();
+  }
+}
+
+/** Simpan lewat tombol "Simpan & Tambah Anak Lagi" — form TIDAK ditutup,
+ *  hanya direset supaya siap diisi anak berikutnya dengan Ayah/Ibu yang sama. */
+async function onSubmitAndAddAnother(){
+  const f = el('#personForm');
+  const childPreset = state.childAddPreset;
+  const result = await savePersonFromForm(f);
+  if(!result?.success || !childPreset) return;
+
+  toast('Anak ditambahkan — siap menambahkan anak berikutnya');
+  f.reset();
+  f.nama.value = '';
+  f.gender.value = 'L';
+  setPhotoPreview('');
+  fillPersonSelect(f.pasangan, '', null);
+  fillPersonSelect(f.ayah, childPreset.ayah, null, 'L');
+  fillPersonSelect(f.ibu, childPreset.ibu, null, 'P');
+  f.nama.focus();
+}
+
+/** Logika inti simpan (dipakai submit biasa maupun "Tambah Lagi"). Mengembalikan hasil API. */
+async function savePersonFromForm(f){
   const data = {
     nama: f.nama.value.trim(),
     gender: f.gender.value,
@@ -751,10 +786,10 @@ async function onSubmitForm(e){
     ayah: f.ayah.value,
     ibu: f.ibu.value,
   };
-  if(!data.nama){ toast('Nama wajib diisi'); return; }
+  if(!data.nama){ toast('Nama wajib diisi'); return { success: false }; }
 
   const key = await ensureAdminKey();
-  if(key === null) return;
+  if(key === null) return { success: false };
 
   const action = state.editingId ? 'update' : 'add';
   if(state.editingId) data.id = state.editingId;
@@ -763,8 +798,6 @@ async function onSubmitForm(e){
   try{
     const result = await callApi(action, data);
     if(!result.success) throw new Error(result.message || 'Gagal menyimpan');
-    toast(state.editingId ? 'Perubahan disimpan' : 'Anggota ditambahkan');
-    closeForm();
     await loadData();
     // jika pasangan dipilih tapi pasangan tsb belum menunjuk balik, set otomatis
     if(data.pasangan){
@@ -779,9 +812,11 @@ async function onSubmitForm(e){
       await callApi('update', {id: linkBack.personId, [linkBack.field]: result.id});
       await loadData();
     }
+    return result;
   }catch(err){
     console.error(err);
     toast('Gagal: ' + err.message);
+    return { success: false };
   }
 }
 

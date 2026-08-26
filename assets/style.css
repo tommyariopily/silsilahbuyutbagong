@@ -227,6 +227,18 @@ button, input, select, textarea{ font-family:inherit; }
   content:""; width:36px; height:1px; background:var(--line);
 }
 
+/* Label generasi per-cabang (di dalam children-wrap) dibuat mengambang, TIDAK
+   mendorong tata letak ke bawah — supaya garis penghubung tetap menyambung utuh. */
+.children-wrap > .gen-badge{
+  position:absolute;
+  top:3px; left:50%;
+  transform:translateX(20px);
+  margin:0;
+  white-space:nowrap;
+  pointer-events:none;
+}
+.children-wrap > .gen-badge::before{ display:none; }
+
 .forest{
   display:flex; gap:40px; align-items:flex-start; justify-content:center;
   flex-wrap:wrap;
