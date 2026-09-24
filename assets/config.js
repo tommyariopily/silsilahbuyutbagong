@@ -12,7 +12,7 @@ const CONFIG = {
   API_URL: "https://script.google.com/macros/s/AKfycby8PcIMl-5CdIb-aeWMG05rIVxvP_c1crM8m9ExXLXeJ8JsC-n0u0riXBGEAO2KwlR1/exec",
 
   // Logo keluarga (sudah otomatis memakai logo yang kamu berikan)
-  LOGO_URL: "https://lh3.googleusercontent.com/d/1KrTYDqI1-R5fGsd0PrzCZuMtID2FYDmt",
+  LOGO_URL: "https://lh3.googleusercontent.com/d/10Pk8hxQPEo7JpzsEoSGyahUdHetE7Jgo",
 
   // Nama aplikasi
   APP_NAME: "Silsilah Keluarga Buyut Bagong",
