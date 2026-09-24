@@ -6,20 +6,26 @@ Aplikasi web silsilah keluarga dengan kartu **Suami** dan **Istri** terpisah (le
 
 ```
 silsilah-buyut-bagong/
-├── index.html          # Halaman utama aplikasi
+├── index.html          # Halaman utama aplikasi (URL: /)
+├── kegiatan/
+│   └── index.html        # Halaman agenda kegiatan (URL: /kegiatan)
 ├── manifest.webmanifest # Konfigurasi PWA (nama, ikon, warna)
 ├── service-worker.js    # Cache offline untuk PWA
+├── vercel.json           # Konfigurasi hosting Vercel (URL bersih tanpa .html)
 ├── assets/
 │   ├── style.css        # Tampilan (tema emas-maroon ala wayang)
 │   ├── app.js            # Logika bagan, form, dan koneksi ke backend
 │   ├── config.js         # ⚙️ isi API_URL di sini setelah deploy backend
 │   ├── pwa.js            # Banner instal PWA + registrasi service worker
-│   ├── kegiatan.js       # Logika tambah/edit/hapus kegiatan (kegiatan.html)
+│   ├── kegiatan.js       # Logika tambah/edit/hapus kegiatan (kegiatan/index.html)
 │   └── icons/            # Ikon aplikasi (berbagai ukuran)
 ├── backend/
 │   └── Code.gs            # Script backend Google Apps Script
 └── README.md
 ```
+
+> **Tentang URL bersih:** halaman Kegiatan disusun sebagai `kegiatan/index.html` (bukan `kegiatan.html`) supaya otomatis bisa diakses lewat `/kegiatan` (tanpa `.html`) di **semua** hosting statis — GitHub Pages, Vercel, Netlify, dll — tanpa bergantung pada fitur rewrite khusus platform tertentu. `vercel.json` menambahkan pengalihan (redirect) dari URL lama `/kegiatan.html` dan `/index.html` sebagai jaga-jaga.
+
 
 ## 1. Setup Backend (Google Sheets + Apps Script)
 
@@ -71,14 +77,28 @@ python3 -m http.server 8000
 5. Tunggu 1–2 menit, aplikasi akan tersedia di:
    `https://<username-github>.github.io/silsilah-buyut-bagong/`
 
+## Tampilan Baru (App Shell: Dashboard, Anggota, Pohon Silsilah)
+
+`index.html` sekarang memakai desain **app-shell** satu halaman (mirip aplikasi HP), bukan lagi bagan panjang langsung di halaman utama. Ada 5 tab di bawah:
+
+- **Dashboard** — ringkasan jumlah anggota, jumlah pasangan, jumlah generasi, daftar anggota terbaru, dan akses cepat (termasuk tautan ke halaman **Kegiatan**).
+- **Silsilah** — bagan pohon keluarga interaktif (SVG), bisa di-pan/zoom, klik simpul untuk melihat profil atau menambah anak/pasangan.
+- **+ (Tambah)** — form tambah anggota baru.
+- **Anggota** — daftar semua anggota dengan pencarian & filter (Semua/Laki-laki/Perempuan/Hidup/Wafat).
+- **Cari** — pencarian cepat lintas nama, pekerjaan, tempat lahir, atau generasi.
+
+Backend, skema Google Sheet, dan kunci admin **tidak berubah** — data yang sudah kamu masukkan sebelumnya tetap terpakai apa adanya, tidak perlu migrasi apa pun.
+
+> **Catatan:** beberapa field yang ada di desain contoh (nama panggilan, pendidikan, no. telepon, email) belum ditampilkan karena kolom itu belum ada di skema Sheet kamu saat ini. Kalau mau ditambahkan, kabari saja — saya bisa bantu perluas skemanya dengan aman tanpa mengganggu data lama.
+
 ## Cara Pakai Aplikasi
 
-- **Melihat bagan**: buka halaman, bagan otomatis tersusun per generasi. Suami & istri ditampilkan berdampingan dengan simbol cincin di tengah; anak-anak tersambung di bawah pasangan orang tuanya.
-- **Cari anggota**: ketik nama di kotak pencarian, kartu yang cocok akan disorot.
-- **Lihat detail**: klik kartu untuk melihat info lengkap (tempat/tanggal lahir, wafat, pekerjaan, alamat, pasangan, orang tua, catatan).
-- **Tambah anggota**: klik **"+ Tambah Anggota"**, isi form, simpan. Kamu akan diminta kunci admin (yang diatur lewat `setAdminKey()`).
-- **Edit/Hapus**: buka detail kartu → klik **Edit** atau **Hapus**.
-- Semua perubahan langsung tersimpan ke Google Sheet backend — kamu juga bisa mengedit data langsung dari Google Sheets, lalu klik **"Muat Ulang"** di aplikasi.
+- **Dashboard**: ringkasan & akses cepat.
+- **Cari anggota**: lewat tab "Cari" atau kotak pencarian di tab "Anggota".
+- **Lihat detail**: klik anggota di daftar/bagan untuk melihat profil lengkap.
+- **Tambah anggota**: lewat tab "+" atau tombol tambah anak/pasangan di profil seseorang. Perubahan data akan meminta **kunci admin** (diatur lewat `setAdminKey()` di Apps Script), diminta sekali lalu diingat di HP masing-masing.
+- **Edit/Hapus**: buka profil anggota → tombol Edit/Hapus.
+- Semua perubahan langsung tersimpan ke Google Sheet backend — kamu juga bisa mengedit data langsung dari Google Sheets, aplikasi akan memuatnya lagi setiap dibuka.
 
 ## Struktur Kolom di Google Sheet ("Data")
 

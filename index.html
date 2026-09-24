@@ -2,183 +2,1989 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
 <title>Silsilah Keluarga Buyut Bagong</title>
-
-<!-- PWA -->
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#170908">
+<meta name="theme-color" content="#7A5518">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Silsilah Bagong">
 <link rel="apple-touch-icon" href="assets/icons/icon-180.png">
 <link rel="icon" type="image/png" sizes="32x32" href="assets/icons/favicon-32.png">
 <link rel="icon" type="image/png" sizes="16x16" href="assets/icons/favicon-16.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="assets/config.js"></script>
+<style>
+:root{
+  --bg:#F5EFE4;
+  --surface:#FFFFFF;
+  --ink:#2B1810;
+  --muted:#8A7566;
+  --primary:#A9762E;
+  --primary-dark:#7A5518;
+  --primary-tint:#F3E7CE;
+  --secondary:#7B3B33;
+  --secondary-tint:#F3E1DD;
+  --gold:#C6952F;
+  --border:#E9DECC;
+  --danger:#B84330;
+  --danger-tint:#F7E4E0;
+  --radius-lg:18px;
+  --radius-md:14px;
+  --radius-sm:10px;
+  --shadow:0 1px 2px rgba(43,24,16,.05), 0 6px 20px rgba(43,24,16,.08);
+}
+*{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+html,body{margin:0; padding:0; height:100%;}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:#DCE4DF;
+  color:var(--ink);
+  display:flex;
+  justify-content:center;
+  /* --app-vh dihitung lewat JS (lihat akhir <script>) supaya akurat di
+     browser mobile yang toolbar-nya bisa muncul/hilang (alamat, dsb),
+     yang membuat 100vh murni lebih tinggi dari area yang benar-benar
+     terlihat dan menutupi bottom navigation. */
+  min-height: calc(var(--app-vh, 1vh) * 100);
+}
+h1,h2,h3,.serif{font-family:'Fraunces',serif;}
+button{font-family:inherit;}
+.app-shell{
+  width:100%;
+  max-width:430px;
+  height: calc(var(--app-vh, 1vh) * 100);
+  background:var(--bg);
+  position:relative;
+  display:flex;
+  flex-direction:column;
+  box-shadow:0 0 60px rgba(0,0,0,.15);
+  overflow:hidden;
+}
 
-<link rel="stylesheet" href="assets/style.css">
+/* ---------- Top bar ---------- */
+.topbar{
+  position:sticky; top:0; z-index:20;
+  background:var(--bg);
+  padding:18px 20px 12px;
+  display:flex; align-items:center; gap:12px;
+}
+.topbar .back-btn{
+  width:38px; height:38px; border-radius:12px; border:none;
+  background:var(--surface); box-shadow:var(--shadow);
+  display:flex; align-items:center; justify-content:center; color:var(--ink);
+}
+.topbar-title{flex:1;}
+.brand-logo{width:34px; height:34px; object-fit:contain; flex-shrink:0;}
+.topbar-title .eyebrow{font-size:12.5px; color:var(--muted); margin:0 0 1px;}
+.topbar-title h1{font-size:21px; margin:0; font-weight:600; letter-spacing:.1px;}
+.topbar-action{
+  width:38px; height:38px; border-radius:12px; border:none;
+  background:var(--surface); box-shadow:var(--shadow); color:var(--primary);
+  display:flex; align-items:center; justify-content:center;
+}
+
+/* ---------- Screen container ---------- */
+.screens{flex:1; position:relative; overflow:hidden;}
+.screen{
+  position:absolute; inset:0;
+  overflow-y:auto;
+  padding:4px 20px 100px;
+  display:none;
+  -webkit-overflow-scrolling:touch;
+}
+.screen.active{display:block;}
+.screen.no-pad{padding:0 0 100px;}
+
+/* ---------- Bottom nav ---------- */
+.bottom-nav{
+  position:absolute; left:0; right:0; bottom:0; z-index:30;
+  background:var(--surface);
+  border-top:1px solid var(--border);
+  display:flex; align-items:center; justify-content:space-around;
+  padding:8px 6px calc(10px + env(safe-area-inset-bottom));
+}
+.nav-btn{
+  border:none; background:none; color:var(--muted);
+  display:flex; flex-direction:column; align-items:center; gap:3px;
+  font-size:11px; padding:4px 8px; border-radius:10px; min-width:52px;
+}
+.nav-btn.active{color:var(--primary);}
+.nav-btn svg{width:22px; height:22px;}
+.nav-btn.fab{
+  width:52px; height:52px; border-radius:50%;
+  background:var(--primary); color:#fff; margin-top:-26px;
+  box-shadow:0 6px 16px rgba(169,118,46,.4);
+  justify-content:center;
+}
+.nav-btn.fab svg{width:24px; height:24px;}
+.nav-btn.fab span{display:none;}
+
+/* ---------- Cards / generic ---------- */
+.card{
+  background:var(--surface); border-radius:var(--radius-lg);
+  box-shadow:var(--shadow); padding:16px;
+}
+.section-title{
+  font-size:15px; font-weight:600; margin:22px 0 12px; color:var(--ink);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.section-title .link{font-size:13px; color:var(--primary); font-weight:500;}
+
+/* ---------- Dashboard ---------- */
+.stat-grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px;}
+.stat-card{
+  background:var(--surface); border-radius:var(--radius-md); padding:14px;
+  box-shadow:var(--shadow);
+}
+.stat-card .num{font-family:'Fraunces',serif; font-size:26px; font-weight:600; line-height:1;}
+.stat-card .lbl{font-size:12.5px; color:var(--muted); margin-top:4px;}
+.stat-card.wide{grid-column:1 / -1; display:flex; justify-content:space-between; align-items:center;}
+
+.gen-row{
+  display:flex; align-items:center; gap:12px;
+  background:var(--surface); border-radius:var(--radius-md); padding:12px 14px;
+  margin-bottom:8px; box-shadow:var(--shadow);
+}
+.gen-badge{
+  width:34px; height:34px; border-radius:10px; background:var(--primary-tint); color:var(--primary-dark);
+  display:flex; align-items:center; justify-content:center; font-weight:700; font-size:14px; flex-shrink:0;
+}
+.gen-bar-track{flex:1; height:7px; background:var(--border); border-radius:99px; overflow:hidden;}
+.gen-bar-fill{height:100%; background:var(--primary); border-radius:99px;}
+.gen-count{font-size:12.5px; color:var(--muted); min-width:52px; text-align:right;}
+
+.hscroll{display:flex; gap:10px; overflow-x:auto; padding:2px 0 8px; scrollbar-width:none;}
+.hscroll::-webkit-scrollbar{display:none;}
+.mini-member{
+  min-width:104px; background:var(--surface); border-radius:var(--radius-md); padding:12px 10px;
+  box-shadow:var(--shadow); text-align:center; flex-shrink:0;
+}
+.mini-member .name{font-size:12.5px; font-weight:600; margin-top:8px; line-height:1.25;}
+.mini-member .sub{font-size:11px; color:var(--muted); margin-top:2px;}
+
+.quick-actions{display:flex; flex-direction:column; gap:8px; margin-top:12px;}
+.qa-btn{
+  display:flex; align-items:center; gap:12px; background:var(--surface); border:none;
+  border-radius:var(--radius-md); padding:13px 14px; box-shadow:var(--shadow);
+  font-size:14.5px; font-weight:500; color:var(--ink); text-align:left;
+}
+.qa-btn .ic{
+  width:36px; height:36px; border-radius:10px; background:var(--primary-tint); color:var(--primary-dark);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.qa-btn.primary{background:var(--primary); color:#fff;}
+.qa-btn.primary .ic{background:rgba(255,255,255,.18); color:#fff;}
+
+/* ---------- Avatar ---------- */
+.avatar{
+  border-radius:50%; display:flex; align-items:center; justify-content:center;
+  font-weight:700; color:#fff; flex-shrink:0; font-family:'Fraunces',serif;
+}
+.avatar.g-L{background:linear-gradient(155deg, var(--primary), var(--primary-dark));}
+.avatar.g-P{background:linear-gradient(155deg, var(--secondary), #4A211C);}
+.avatar.deceased{filter:grayscale(1); opacity:.62;}
+
+/* ---------- Members list ---------- */
+.filter-chips{display:flex; gap:8px; overflow-x:auto; padding:2px 0 14px; scrollbar-width:none;}
+.filter-chips::-webkit-scrollbar{display:none;}
+.chip{
+  border:1px solid var(--border); background:var(--surface); color:var(--muted);
+  padding:8px 14px; border-radius:99px; font-size:13px; white-space:nowrap; flex-shrink:0; font-weight:500;
+}
+.chip.active{background:var(--primary); border-color:var(--primary); color:#fff;}
+
+.member-row{
+  display:flex; align-items:center; gap:12px; background:var(--surface); border-radius:var(--radius-md);
+  padding:12px; margin-bottom:9px; box-shadow:var(--shadow);
+}
+.member-row .avatar{width:46px; height:46px; font-size:15px;}
+.member-info{flex:1; min-width:0;}
+.member-info .name{font-size:14.5px; font-weight:600;}
+.member-info .meta{font-size:12px; color:var(--muted); margin-top:2px; display:flex; gap:6px; align-items:center; flex-wrap:wrap;}
+.status-dot{width:7px; height:7px; border-radius:50%; display:inline-block;}
+.status-dot.hidup{background:var(--gold);}
+.status-dot.wafat{background:var(--muted);}
+.row-actions{display:flex; gap:6px;}
+.icon-btn{
+  width:32px; height:32px; border-radius:9px; border:none; background:var(--bg); color:var(--muted);
+  display:flex; align-items:center; justify-content:center;
+}
+.icon-btn svg{width:16px; height:16px;}
+.icon-btn.danger{color:var(--danger);}
+
+/* ---------- Search ---------- */
+.search-bar{
+  display:flex; align-items:center; gap:10px; background:var(--surface); border-radius:var(--radius-md);
+  padding:12px 14px; box-shadow:var(--shadow); margin-top:6px;
+}
+.search-bar input{flex:1; border:none; outline:none; font-size:14.5px; background:none; color:var(--ink); font-family:inherit;}
+.search-bar svg{width:18px; height:18px; color:var(--muted); flex-shrink:0;}
+.search-meta{font-size:13px; color:var(--muted); margin:16px 2px 8px;}
+.empty-state{text-align:center; padding:50px 20px; color:var(--muted);}
+.empty-state svg{width:44px; height:44px; margin-bottom:10px; opacity:.5;}
+.empty-state .t{font-weight:600; color:var(--ink); margin-bottom:4px;}
+.retry-btn{
+  margin-top:14px; border:none; background:var(--primary); color:#fff; padding:10px 18px;
+  border-radius:var(--radius-sm); font-size:13.5px; font-weight:600;
+}
+
+/* ---------- Skeleton ---------- */
+.skel{background:linear-gradient(90deg,#E7EDE9 25%,#F3F6F4 37%,#E7EDE9 63%); background-size:400% 100%; animation:shimmer 1.4s infinite; border-radius:var(--radius-md);}
+@keyframes shimmer{0%{background-position:100% 0}100%{background-position:0 0}}
+.skel-row{height:70px; margin-bottom:9px;}
+.skel-card{height:78px;}
+
+/* ---------- Photo picker ---------- */
+.photo-picker-row{display:flex; align-items:center; gap:14px;}
+.photo-preview{
+  width:64px; height:64px; border-radius:50%; background:var(--primary-tint); color:var(--primary-dark);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0; overflow:hidden; border:1px solid var(--border);
+}
+.photo-preview svg{width:26px; height:26px;}
+.photo-preview img{width:100%; height:100%; object-fit:cover;}
+.photo-picker-actions{display:flex; flex-direction:column; gap:6px; align-items:flex-start;}
+.photo-btn{
+  display:flex; align-items:center; gap:8px; border:1px solid var(--border); background:var(--surface);
+  color:var(--ink); padding:9px 14px; border-radius:99px; font-size:13px; font-weight:600;
+}
+.photo-btn svg{width:16px; height:16px; color:var(--primary);}
+.photo-btn-remove{border:none; background:none; color:var(--danger); font-size:12.5px; font-weight:600; padding:2px 4px;}
+
+/* ---------- Form ---------- */
+.form-group{margin-bottom:14px;}
+.form-group label{display:block; font-size:13px; font-weight:600; margin-bottom:6px; color:var(--ink);}
+.form-group label .req{color:var(--danger);}
+.form-group input, .form-group select, .form-group textarea{
+  width:100%; border:1px solid var(--border); border-radius:var(--radius-sm); padding:11px 12px;
+  font-size:14.5px; font-family:inherit; background:var(--surface); color:var(--ink); outline:none;
+}
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus{border-color:var(--primary); box-shadow:0 0 0 3px var(--primary-tint);}
+.form-group .hint{font-size:12px; color:var(--danger); margin-top:5px; display:none;}
+.form-group.error input, .form-group.error select{border-color:var(--danger);}
+.form-group.error .hint{display:block;}
+.form-row{display:flex; gap:10px;}
+.form-row .form-group{flex:1;}
+.form-divider{margin:22px 0 14px; font-size:13.5px; font-weight:600; color:var(--muted); border-top:1px solid var(--border); padding-top:16px;}
+.form-context-banner{
+  display:flex; align-items:center; gap:10px; background:var(--primary-tint); color:var(--primary-dark);
+  padding:11px 14px; border-radius:var(--radius-sm); font-size:13px; font-weight:500; margin-bottom:16px;
+}
+.form-context-banner svg{width:16px; height:16px; flex-shrink:0;}
+.quick-add-row{display:flex; gap:8px; justify-content:center; margin:2px 0 18px; flex-wrap:wrap;}
+.quick-add-chip{
+  display:flex; align-items:center; gap:6px; border:1px solid var(--primary); background:var(--primary-tint);
+  color:var(--primary-dark); padding:8px 14px; border-radius:99px; font-size:12.5px; font-weight:600;
+}
+.quick-add-chip svg{width:14px; height:14px;}
+.quick-add-list{display:flex; flex-direction:column; gap:8px; margin-top:14px;}
+.submit-btn{
+  width:100%; border:none; background:var(--primary); color:#fff; padding:14px; border-radius:var(--radius-md);
+  font-size:15px; font-weight:600; margin-top:6px; box-shadow:0 6px 16px rgba(169,118,46,.28);
+}
+.submit-btn:disabled{opacity:.6;}
+
+/* ---------- Tree ---------- */
+.tree-wrap{position:relative; width:100%; height:calc(var(--app-vh, 1vh) * 100 - 130px); overflow:hidden; background:
+  radial-gradient(circle at 1px 1px, #D9E3DD 1.5px, transparent 0) 0 0/22px 22px, var(--bg); touch-action:none;}
+.tree-svg{position:absolute; top:0; left:0; cursor:grab;}
+.tree-svg:active{cursor:grabbing;}
+.tree-controls{
+  position:absolute; right:14px; bottom:16px; display:flex; flex-direction:column; gap:8px; z-index:5;
+}
+.tree-controls button{
+  width:42px; height:42px; border-radius:12px; border:none; background:var(--surface); box-shadow:var(--shadow);
+  color:var(--ink); display:flex; align-items:center; justify-content:center;
+}
+.tree-controls svg{width:19px; height:19px;}
+.tree-hint{
+  position:absolute; left:14px; bottom:16px; background:rgba(255,255,255,.9); backdrop-filter:blur(4px);
+  padding:8px 12px; border-radius:99px; font-size:11.5px; color:var(--muted); box-shadow:var(--shadow);
+}
+.unit-card{cursor:pointer;}
+.unit-card rect.bg{fill:var(--surface); stroke:var(--border); stroke-width:1;}
+.unit-card.focused rect.bg{stroke:var(--gold); stroke-width:2.5;}
+.unit-card text.name{font-family:'Inter',sans-serif; font-weight:600; fill:var(--ink);}
+.unit-card text.sub{font-family:'Inter',sans-serif; fill:var(--muted);}
+.tree-link{stroke:#B9C6BF; stroke-width:1.6; fill:none;}
+.tree-link.cross-link{stroke:var(--secondary); stroke-width:1.4; stroke-dasharray:5 4; opacity:.6;}
+.spouse-link{stroke:#B9C6BF; stroke-width:1.6;}
+.toggle-btn circle{fill:var(--surface); stroke:var(--border);}
+.toggle-btn text{fill:var(--muted); font-size:11px; font-weight:700; font-family:'Inter',sans-serif;}
+.card-add-btn{cursor:pointer;}
+
+/* ---------- Modal ---------- */
+.modal-overlay{
+  position:absolute; inset:0; background:rgba(15,25,20,.42); z-index:50;
+  display:none; align-items:flex-end; justify-content:center;
+}
+.modal-overlay.active{display:flex;}
+.modal-sheet{
+  width:100%; max-height:92%; background:var(--bg); border-radius:22px 22px 0 0;
+  overflow-y:auto; padding:10px 20px calc(28px + env(safe-area-inset-bottom));
+  animation:sheet-up .22s ease;
+}
+@keyframes sheet-up{from{transform:translateY(24px); opacity:0} to{transform:translateY(0); opacity:1}}
+.sheet-handle{width:38px; height:4px; background:var(--border); border-radius:99px; margin:8px auto 14px;}
+.modal-close{
+  position:absolute; top:14px; right:16px; width:34px; height:34px; border-radius:10px; border:none;
+  background:var(--surface); box-shadow:var(--shadow); color:var(--ink); display:flex; align-items:center; justify-content:center;
+}
+.profile-head{text-align:center; padding:6px 0 18px;}
+.profile-head .avatar{width:84px; height:84px; font-size:28px; margin:0 auto 12px;}
+.profile-head h2{font-size:20px; margin:0 0 3px;}
+.profile-head .sub{font-size:13px; color:var(--muted);}
+.status-pill{
+  display:inline-flex; align-items:center; gap:5px; font-size:12px; font-weight:600; padding:4px 11px;
+  border-radius:99px; margin-top:9px;
+}
+.status-pill.hidup{background:#FCF1DA; color:#8A6410;}
+.status-pill.wafat{background:var(--bg); color:var(--muted); border:1px solid var(--border);}
+.info-list{background:var(--surface); border-radius:var(--radius-md); box-shadow:var(--shadow); padding:4px 14px;}
+.info-item{display:flex; align-items:center; gap:12px; padding:12px 0; border-bottom:1px solid var(--border);}
+.info-item:last-child{border-bottom:none;}
+.info-item .ic{width:30px; height:30px; border-radius:9px; background:var(--primary-tint); color:var(--primary-dark); display:flex; align-items:center; justify-content:center; flex-shrink:0;}
+.info-item svg{width:15px; height:15px;}
+.info-item .txt .l{font-size:11.5px; color:var(--muted);}
+.info-item .txt .v{font-size:14px; font-weight:500; margin-top:1px;}
+.rel-group{margin-top:18px;}
+.rel-group .glabel{font-size:12.5px; font-weight:600; color:var(--muted); margin-bottom:8px; text-transform:uppercase; letter-spacing:.4px;}
+.rel-chips{display:flex; gap:8px; flex-wrap:wrap;}
+.rel-chip{
+  display:flex; align-items:center; gap:8px; background:var(--surface); border-radius:99px; padding:6px 12px 6px 6px;
+  box-shadow:var(--shadow); font-size:13px; font-weight:500;
+}
+.rel-chip .avatar{width:26px; height:26px; font-size:10.5px;}
+.profile-actions{display:flex; gap:9px; margin-top:22px;}
+.profile-actions button{
+  flex:1; border:none; padding:12px; border-radius:var(--radius-md); font-size:13.5px; font-weight:600;
+  display:flex; align-items:center; justify-content:center; gap:6px;
+}
+.profile-actions svg{width:15px; height:15px;}
+.btn-outline{background:var(--surface); color:var(--ink); box-shadow:var(--shadow);}
+.btn-primary{background:var(--primary); color:#fff;}
+.btn-danger{background:var(--danger-tint); color:var(--danger);}
+
+.confirm-box{background:var(--surface); border-radius:var(--radius-lg); padding:22px; text-align:center;}
+.confirm-box h3{margin:0 0 8px; font-size:17px;}
+.confirm-box p{font-size:13.5px; color:var(--muted); margin:0 0 6px; line-height:1.5;}
+.confirm-box .warn{background:#FCEEE9; color:var(--danger); font-size:12.5px; padding:9px 12px; border-radius:var(--radius-sm); margin-top:10px; text-align:left;}
+.confirm-actions{display:flex; gap:10px; margin-top:18px;}
+.confirm-actions button{flex:1; border:none; padding:12px; border-radius:var(--radius-md); font-weight:600; font-size:14px;}
+
+/* ---------- Install PWA banner ---------- */
+.install-banner{
+  position:absolute; left:12px; right:12px; bottom:calc(78px + env(safe-area-inset-bottom));
+  z-index:70; background:var(--surface); border-radius:var(--radius-lg); box-shadow:0 12px 30px rgba(0,0,0,.18);
+  padding:14px; display:none; align-items:center; gap:12px;
+  animation:sheet-up .25s ease;
+}
+.install-banner.active{display:flex;}
+.install-icon{
+  width:42px; height:42px; border-radius:12px; background:var(--primary-tint); color:var(--primary-dark);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+}
+.install-icon svg{width:20px; height:20px;}
+.install-text{flex:1; min-width:0;}
+.install-text .t{font-size:13.5px; font-weight:700;}
+.install-text .s{font-size:11.5px; color:var(--muted); margin-top:2px; line-height:1.35;}
+.install-actions{display:flex; flex-direction:column; gap:6px; flex-shrink:0;}
+.install-actions button{border:none; background:none; font-size:12.5px; font-weight:700; padding:6px 8px; border-radius:8px; color:var(--muted);}
+.install-actions button.primary{background:var(--primary); color:#fff; padding:7px 14px;}
+
+/* ---------- Toast ---------- */
+.toast-stack{position:absolute; top:14px; left:0; right:0; z-index:80; display:flex; flex-direction:column; align-items:center; gap:8px; pointer-events:none;}
+.toast{
+  background:var(--ink); color:#fff; padding:11px 18px; border-radius:99px; font-size:13px; font-weight:500;
+  box-shadow:0 8px 20px rgba(0,0,0,.25); display:flex; align-items:center; gap:8px;
+  animation:toast-in .2s ease;
+}
+.toast.error{background:var(--danger);}
+.toast svg{width:15px; height:15px; flex-shrink:0;}
+@keyframes toast-in{from{transform:translateY(-10px); opacity:0} to{transform:translateY(0); opacity:1}}
+</style>
 </head>
 <body>
+<div class="app-shell" id="appShell">
 
-  <header class="site-header">
-    <img id="logo" class="logo" alt="Logo Keluarga">
-    <div class="title-group">
-      <h1 id="appTitle">Silsilah Keluarga Buyut Bagong</h1>
-      <p id="appSubtitle">Keluarga Besar Buyut Bagong</p>
+  <div class="topbar">
+    <button class="back-btn" id="backBtn" style="display:none;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 5 8 12l7 7"/></svg>
+    </button>
+    <img id="brandLogo" class="brand-logo" alt="Logo Keluarga">
+    <div class="topbar-title">
+      <p class="eyebrow" id="topEyebrow">Selamat datang</p>
+      <h1 id="topTitle">Dashboard</h1>
     </div>
-  </header>
-
-  <button type="button" id="btnPrint" class="print-fab" title="Cetak / Simpan PDF" aria-label="Cetak">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-  </button>
-
-  <div class="toolbar" id="topToolbar">
-    <div class="search-box">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <input type="text" id="searchInput" placeholder="Cari nama anggota keluarga...">
-    </div>
-    <button class="btn" id="btnAdd">+ Tambah Anggota</button>
-    <button class="btn ghost" id="btnRefresh">Muat Ulang</button>
+    <button class="topbar-action" id="topAction" style="display:none;"></button>
   </div>
 
-  <!-- hanya tampil saat dicetak -->
-  <div class="print-header" id="printHeader">
-    <div class="print-header-title">Silsilah Keluarga Buyut Bagong</div>
-    <div class="print-header-right">
-      <div class="print-header-date" id="printDate"></div>
-      <div class="print-header-note">Bagan otomatis diskalakan ke lebar A4. Jika terlihat kurang pas, atur "Skala" di kotak dialog cetak.</div>
-    </div>
-  </div>
+  <div class="screens">
 
-  <main class="tree-wrap" id="treeWrap">
-    <div class="tree-root" id="treeRoot">
-      <div class="loader"><div class="spin"></div> Memuat silsilah…</div>
-    </div>
-    <div class="zoom-controls">
-      <button id="btnZoomIn" title="Perbesar" aria-label="Perbesar">+</button>
-      <button id="btnZoomOut" title="Perkecil" aria-label="Perkecil">−</button>
-      <button id="btnZoomReset" title="Sesuaikan ke layar" aria-label="Sesuaikan ke layar">⤢</button>
-    </div>
-    <div class="zoom-hint" id="zoomHint">Cubit / gulir / seret untuk menjelajah</div>
-  </main>
+    <!-- DASHBOARD -->
+    <section class="screen active" id="screen-dashboard">
+      <div class="stat-grid" id="statGrid"></div>
+      <div class="section-title">Generasi Keluarga</div>
+      <div id="genList"></div>
+      <div class="section-title">Anggota Terbaru</div>
+      <div class="hscroll" id="recentList"></div>
+      <div class="section-title">Akses Cepat</div>
+      <div class="quick-actions">
+        <button class="qa-btn primary" data-nav="tambah">
+          <span class="ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          </span> Tambah Anggota
+        </button>
+        <button class="qa-btn" data-nav="silsilah">
+          <span class="ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="18" cy="12" r="2"/><circle cx="6" cy="19.5" r="2"/><circle cx="18" cy="19.5" r="2"/><path d="M12 6.5v2.3M11 8.6 7 10.5M13 8.6l4 1.9M6 14v3.5M18 14v3.5"/></svg>
+          </span> Lihat Silsilah
+        </button>
+        <button class="qa-btn" data-nav="cari">
+          <span class="ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+          </span> Cari Keluarga
+        </button>
+        <a class="qa-btn" href="kegiatan/" style="text-decoration:none;">
+          <span class="ic">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          </span> Kegiatan Keluarga
+        </a>
+      </div>
+    </section>
 
-  <!-- ============ DETAIL MODAL ============ -->
-  <div class="overlay" id="detailOverlay">
-    <div class="modal">
-      <button class="modal-close" onclick="closeDetail()">&times;</button>
-      <div id="detailBody"></div>
-    </div>
-  </div>
+    <!-- SILSILAH / TREE -->
+    <section class="screen no-pad" id="screen-silsilah">
+      <div class="tree-wrap" id="treeWrap">
+        <svg class="tree-svg" id="treeSvg"></svg>
+        <div class="tree-controls">
+          <button id="btnZoomIn" title="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M10 7v6M7 10h6"/><path d="M21 21l-5-5"/></svg></button>
+          <button id="btnZoomOut" title="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="10" cy="10" r="7"/><path d="M7 10h6"/><path d="M21 21l-5-5"/></svg></button>
+          <button id="btnReset" title="Reset posisi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+          <button id="btnFullscreen" title="Fullscreen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4H4v4M16 4h4v4M8 20H4v-4M16 20h4v-4"/></svg></button>
+        </div>
+        <div class="tree-hint">Geser untuk melihat &middot; ketuk kartu untuk profil</div>
+      </div>
+    </section>
 
-  <!-- ============ FORM MODAL (ADD/EDIT) ============ -->
-  <div class="overlay" id="formOverlay">
-    <div class="modal">
-      <button class="modal-close" onclick="closeForm()">&times;</button>
-      <h2 style="font-family:var(--font-display);color:var(--gold-1);margin-top:0;" id="formTitle">Tambah Anggota</h2>
-      <form id="personForm">
-        <div class="form-grid">
-          <div class="full">
-            <label>Nama Lengkap *</label>
-            <input type="text" name="nama" required placeholder="Contoh: Bagong Suryowidjojo">
-          </div>
-          <div>
-            <label>Jenis Kelamin *</label>
-            <select name="gender" id="genderSelect" required>
-              <option value="L">Laki-laki</option>
-              <option value="P">Perempuan</option>
-            </select>
-          </div>
-          <div>
-            <label>Pekerjaan</label>
-            <input type="text" name="pekerjaan" placeholder="Contoh: Petani">
-          </div>
-          <div class="full">
-            <label>Foto</label>
-            <div class="photo-upload">
-              <div class="preview" id="photoPreview"><img id="photoPreviewImg" alt="Pratinjau foto"></div>
-              <div class="actions">
-                <label class="file-label" for="photoFile">Pilih Foto…</label>
-                <input type="file" id="photoFile" accept="image/*">
-                <button type="button" class="remove-photo" id="btnRemovePhoto">Hapus foto</button>
-              </div>
-              <input type="hidden" name="foto" id="fotoField">
+    <!-- ANGGOTA -->
+    <section class="screen" id="screen-anggota">
+      <div class="filter-chips" id="memberFilters"></div>
+      <div id="memberList"></div>
+    </section>
+
+    <!-- TAMBAH -->
+    <section class="screen" id="screen-tambah">
+      <form id="addForm">
+        <div class="form-context-banner" id="formContextBanner" style="display:none;"></div>
+        <div class="form-group photo-picker">
+          <label>Foto</label>
+          <div class="photo-picker-row">
+            <div class="photo-preview" id="photoPreview">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-7 8-7s8 3 8 7"/></svg>
             </div>
-            <div class="field-hint">Foto otomatis dipotong persegi &amp; dikecilkan sebelum disimpan.</div>
+            <div class="photo-picker-actions">
+              <button type="button" class="photo-btn" id="btnPickPhoto">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7l1.5-2.5h5L16 7"/><circle cx="12" cy="13.5" r="3.5"/></svg>
+                Tambah Foto
+              </button>
+              <button type="button" class="photo-btn-remove" id="btnRemovePhoto" style="display:none;">Hapus foto</button>
+              <input type="file" id="f-foto" accept="image/*" style="display:none;">
+            </div>
           </div>
-          <div>
+          <p class="hint" id="photoHint">Ukuran foto maksimal 4MB.</p>
+        </div>
+        <div class="form-group" id="fg-nama">
+          <label>Nama Lengkap <span class="req">*</span></label>
+          <input type="text" id="f-nama" placeholder="cth. Ahmad Fauzi">
+          <p class="hint">Nama wajib diisi.</p>
+        </div>
+        <div class="form-group" id="fg-gender">
+          <label>Jenis Kelamin <span class="req">*</span></label>
+          <select id="f-gender">
+            <option value="">Pilih jenis kelamin</option>
+            <option value="L">Laki-laki</option>
+            <option value="P">Perempuan</option>
+          </select>
+          <p class="hint">Jenis kelamin wajib diisi.</p>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
             <label>Tempat Lahir</label>
-            <input type="text" name="tempatLahir">
+            <input type="text" id="f-tempat" placeholder="cth. Bogor">
           </div>
-          <div></div>
-          <div>
+          <div class="form-group" id="fg-tgl">
             <label>Tanggal Lahir</label>
-            <input type="date" name="tglLahir">
-          </div>
-          <div>
-            <label>Tanggal Wafat</label>
-            <input type="date" name="tglWafat">
-          </div>
-          <div class="full">
-            <label>Alamat</label>
-            <input type="text" name="alamat">
-          </div>
-          <div>
-            <label>Pasangan</label>
-            <select name="pasangan"></select>
-          </div>
-          <div></div>
-          <div>
-            <label>Ayah</label>
-            <select name="ayah"></select>
-          </div>
-          <div>
-            <label>Ibu</label>
-            <select name="ibu"></select>
-          </div>
-          <div class="full">
-            <label>Catatan</label>
-            <textarea name="catatan" placeholder="Cerita, silsilah tambahan, dsb."></textarea>
+            <input type="date" id="f-tgl">
+            <p class="hint">Tanggal lahir tidak boleh lebih besar dari hari ini.</p>
           </div>
         </div>
-        <div class="modal-actions">
-          <button type="button" class="btn ghost small" onclick="closeForm()">Batal</button>
-          <button type="button" class="btn ghost small" id="btnSaveAddAnother" style="display:none;" onclick="onSubmitAndAddAnother()">Simpan &amp; Tambah Anak Lagi</button>
-          <button type="submit" class="btn small">Simpan</button>
+        <div class="form-group">
+          <label>Status Hidup</label>
+          <select id="f-status">
+            <option value="Hidup">Hidup</option>
+            <option value="Wafat">Almarhum / Almarhumah</option>
+          </select>
         </div>
+        <div class="form-group" id="fg-wafat" style="display:none;">
+          <label>Tanggal Wafat</label>
+          <input type="date" id="f-tglwafat">
+          <p class="hint">Tanggal wafat tidak boleh lebih awal dari tanggal lahir.</p>
+        </div>
+        <div class="form-group">
+          <label>Pekerjaan</label>
+          <input type="text" id="f-pekerjaan" placeholder="cth. Guru">
+        </div>
+        <div class="form-group">
+          <label>Alamat</label>
+          <input type="text" id="f-alamat" placeholder="Alamat domisili">
+        </div>
+        <div class="form-group">
+          <label>Catatan</label>
+          <textarea id="f-catatan" rows="3" placeholder="Catatan tambahan"></textarea>
+        </div>
+
+        <div class="form-divider">Hubungan Keluarga</div>
+        <div class="form-group" id="fg-ayah">
+          <label>Pilih Ayah</label>
+          <select id="f-ayah"><option value="">Tidak ada / tidak diketahui</option></select>
+        </div>
+        <div class="form-group" id="fg-ibu">
+          <label>Pilih Ibu</label>
+          <select id="f-ibu"><option value="">Tidak ada / tidak diketahui</option></select>
+        </div>
+        <div class="form-group" id="fg-pasangan">
+          <label>Pilih Pasangan</label>
+          <select id="f-pasangan"><option value="">Tidak ada / belum menikah</option></select>
+        </div>
+
+        <button type="submit" class="submit-btn" id="submitBtn">Simpan Anggota</button>
       </form>
-    </div>
+    </section>
+
+    <!-- CARI -->
+    <section class="screen" id="screen-cari">
+      <div class="search-bar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input type="text" id="searchInput" placeholder="Cari nama, panggilan, pekerjaan, tempat lahir...">
+      </div>
+      <div id="searchResults"></div>
+    </section>
+
   </div>
 
-  <!-- ============ BOTTOM NAV (khusus tampilan mobile) ============ -->
-  <nav class="bottom-nav" id="bottomNav">
-    <button type="button" id="navFit">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>
-      <span>Beranda</span>
+  <div class="bottom-nav" id="bottomNav">
+    <button class="nav-btn active" data-nav="dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h4v-6h4v6h4a1 1 0 0 0 1-1v-9"/></svg>
+      <span>Dashboard</span>
     </button>
-    <button type="button" id="navSearch">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-      <span>Cari</span>
+    <button class="nav-btn" data-nav="silsilah">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="18" cy="12" r="2"/><circle cx="6" cy="19.5" r="2"/><circle cx="18" cy="19.5" r="2"/><path d="M12 6.5v2.3M11 8.6 7 10.5M13 8.6l4 1.9M6 14v3.5M18 14v3.5"/></svg>
+      <span>Silsilah</span>
     </button>
-    <button type="button" id="navAdd" class="nav-add">
-      <span class="add-circle">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </span>
+    <button class="nav-btn fab" data-nav="tambah">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
       <span>Tambah</span>
     </button>
-    <a href="kegiatan/" id="navKegiatan">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      <span>Kegiatan</span>
-    </a>
-    <button type="button" id="navRefresh">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0114.13-3.36L23 10M1 14l5.36 4.36A9 9 0016.49 15"/></svg>
-      <span>Muat Ulang</span>
+    <button class="nav-btn" data-nav="anggota">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5"/><circle cx="17" cy="9" r="2.3"/><path d="M15 20c.3-2 1.8-3.4 4-3.7"/></svg>
+      <span>Anggota</span>
     </button>
-  </nav>
+    <button class="nav-btn" data-nav="cari">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+      <span>Cari</span>
+    </button>
+  </div>
 
-  <div class="toast" id="toast"></div>
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-sheet" id="modalSheet"></div>
+  </div>
 
-  <script src="assets/config.js"></script>
-  <script src="assets/app.js"></script>
-  <script src="assets/pwa.js"></script>
+  <div class="toast-stack" id="toastStack"></div>
+
+  <div class="install-banner" id="installBanner">
+    <div class="install-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="18" cy="12" r="2"/><path d="M12 6.5v2.3M11 8.6 7 10.5M13 8.6l4 1.9"/></svg>
+    </div>
+    <div class="install-text">
+      <div class="t">Instal Silsilah Buyut Bagong</div>
+      <div class="s" id="installSub">Tambahkan ke layar utama untuk akses lebih cepat, kapan saja.</div>
+    </div>
+    <div class="install-actions">
+      <button id="installDismiss">Nanti</button>
+      <button id="installConfirm" class="primary">Instal</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =========================================================
+   CONFIG  — memakai assets/config.js (satu sumber utk index.html,
+   kegiatan/, dan halaman ini). APP_CONFIG dipakai di sini (bukan nama
+   `CONFIG` langsung) supaya tidak bentrok dgn `const CONFIG` global
+   yang sudah didefinisikan oleh assets/config.js.
+   ========================================================= */
+const APP_CONFIG = {
+  API_URL: (typeof CONFIG !== "undefined" && CONFIG.API_URL) || "PASTE_URL_WEB_APP_GAS_DI_SINI",
+};
+APP_CONFIG.USE_MOCK = !APP_CONFIG.API_URL || APP_CONFIG.API_URL.includes("PASTE_URL");
+
+if(document.getElementById("brandLogo") && typeof CONFIG !== "undefined"){
+  document.getElementById("brandLogo").src = CONFIG.LOGO_URL;
+}
+
+/* =========================================================
+   PEMETAAN FIELD — backend Google Apps Script (Code.gs) yang sudah
+   ada memakai nama kolom Nama/JenisKelamin/TempatLahir/dst. (lihat
+   backend/Code.gs). Dua fungsi ini menerjemahkan bolak-balik supaya
+   seluruh kode di bawah (render, form, pohon silsilah) bisa tetap
+   memakai nama field yang lebih deskriptif tanpa perlu mengubah
+   skema Sheet yang sudah dipakai & sudah berisi data asli keluarga.
+   ========================================================= */
+function mapFromSheet(row){
+  return {
+    id: String(row.ID ?? "").trim(),
+    nama_lengkap: row.Nama || "(Tanpa nama)",
+    nama_panggilan: "",
+    jenis_kelamin: (row.JenisKelamin || "L").toUpperCase().startsWith("P") ? "P" : "L",
+    foto: row.Foto || "",
+    tempat_lahir: row.TempatLahir || "",
+    tanggal_lahir: row.TanggalLahir || "",
+    tanggal_wafat: row.TanggalWafat || "",
+    status_hidup: row.TanggalWafat ? "Wafat" : "Hidup",
+    pekerjaan: row.Pekerjaan || "",
+    pendidikan: "",
+    alamat: row.Alamat || "",
+    nomor_telepon: "",
+    email: "",
+    catatan: row.Catatan || "",
+    father_id: String(row.Ayah || "").trim(),
+    mother_id: String(row.Ibu || "").trim(),
+    spouse_id: String(row.Pasangan || "").trim(),
+  };
+}
+function mapToSheet(m){
+  return {
+    nama: m.nama_lengkap || "",
+    gender: m.jenis_kelamin || "L",
+    foto: m.foto || "",
+    tempatLahir: m.tempat_lahir || "",
+    tglLahir: m.tanggal_lahir || "",
+    tglWafat: m.tanggal_wafat || "",
+    pekerjaan: m.pekerjaan || "",
+    alamat: m.alamat || "",
+    catatan: m.catatan || "",
+    pasangan: m.spouse_id || "",
+    ayah: m.father_id || "",
+    ibu: m.mother_id || "",
+  };
+}
+
+/* =========================================================
+   MOCK DATA — dipakai sementara sebelum API_URL diisi di assets/config.js
+   ========================================================= */
+let MEMBERS = [
+  {id:"1", nama_lengkap:"Buyut Bagong", nama_panggilan:"", jenis_kelamin:"L", tempat_lahir:"Desa Sukamaju", tanggal_lahir:"1930-01-01", tanggal_wafat:"2005-05-10", status_hidup:"Wafat", pekerjaan:"Petani", pendidikan:"", alamat:"Desa Sukamaju", nomor_telepon:"", email:"", catatan:"Leluhur keluarga besar", father_id:"", mother_id:"", spouse_id:"2"},
+  {id:"2", nama_lengkap:"Nyai Bagong", nama_panggilan:"", jenis_kelamin:"P", tempat_lahir:"Desa Sukamaju", tanggal_lahir:"1934-03-12", tanggal_wafat:"2010-08-20", status_hidup:"Wafat", pekerjaan:"", pendidikan:"", alamat:"Desa Sukamaju", nomor_telepon:"", email:"", catatan:"", father_id:"", mother_id:"", spouse_id:"1"},
+  {id:"3", nama_lengkap:"Suminta", nama_panggilan:"", jenis_kelamin:"L", tempat_lahir:"Bogor", tanggal_lahir:"1955-06-15", tanggal_wafat:"", status_hidup:"Hidup", pekerjaan:"Guru", pendidikan:"", alamat:"Bogor", nomor_telepon:"", email:"", catatan:"Anak sulung", father_id:"1", mother_id:"2", spouse_id:"4"},
+  {id:"4", nama_lengkap:"Wartinah", nama_panggilan:"", jenis_kelamin:"P", tempat_lahir:"Bogor", tanggal_lahir:"1958-09-01", tanggal_wafat:"", status_hidup:"Hidup", pekerjaan:"", pendidikan:"", alamat:"Bogor", nomor_telepon:"", email:"", catatan:"", father_id:"", mother_id:"", spouse_id:"3"},
+];
+let nextIdNum = 10;
+
+/* =========================================================
+   API LAYER — disambungkan ke backend Code.gs yang sudah ada:
+   doGet ?action=list&entity=anggota, doPost {action:'add'/'update'/'delete',
+   entity:'anggota', data, id, key}. Statistik & pencarian dihitung lokal
+   dari MEMBERS (backend tidak punya endpoint terpisah utk itu) — cukup
+   karena getMembers() selalu memuat seluruh data lebih dulu.
+   ========================================================= */
+const api = {
+  async getMembers(){
+    if(!APP_CONFIG.USE_MOCK){
+      const res = await gasGet();
+      if(res.success) MEMBERS = res.data.map(mapFromSheet); // sinkronkan data global dgn Spreadsheet
+      return res;
+    }
+    await delay(350); return ok(MEMBERS);
+  },
+  async getMember(id){
+    if(!APP_CONFIG.USE_MOCK) await api.getMembers();
+    await delay(50); const m=MEMBERS.find(x=>x.id===id); return m?ok(m):fail("Anggota tidak ditemukan");
+  },
+  async addMember(payload){
+    if(!APP_CONFIG.USE_MOCK){
+      const res = await gasPost({action:'add', entity:'anggota', data: mapToSheet(payload)});
+      if(res.success) return ok(Object.assign({}, payload, {id: String(res.id)}));
+      return res;
+    }
+    await delay(400);
+    const id = String(nextIdNum++);
+    const now = new Date().toISOString();
+    const member = Object.assign({id, tanggal_wafat:"", spouse_id:"", father_id:"", mother_id:"", created_at:now, updated_at:now}, payload);
+    MEMBERS.push(member);
+    if(member.spouse_id){ const sp = getMemberById(member.spouse_id); if(sp) sp.spouse_id = member.id; }
+    return ok(member);
+  },
+  async updateMember(id, data){
+    if(!APP_CONFIG.USE_MOCK){
+      const res = await gasPost({action:'update', entity:'anggota', data: Object.assign({id}, mapToSheet(data))});
+      if(res.success) return ok(Object.assign({id}, data));
+      return res;
+    }
+    await delay(300);
+    const m = getMemberById(id);
+    if(!m) return fail("Anggota tidak ditemukan");
+    Object.assign(m, data, {updated_at:new Date().toISOString()});
+    return ok(m);
+  },
+  async deleteMember(id){
+    if(!APP_CONFIG.USE_MOCK){
+      const res = await gasPost({action:'delete', entity:'anggota', id});
+      return res;
+    }
+    await delay(300);
+    MEMBERS = MEMBERS.filter(m=>m.id!==id);
+    MEMBERS.forEach(m=>{
+      if(m.father_id===id) m.father_id="";
+      if(m.mother_id===id) m.mother_id="";
+      if(m.spouse_id===id) m.spouse_id="";
+    });
+    return ok(true);
+  },
+  /** Foto disimpan langsung sbg data URI terkompresi di kolom Foto — tidak
+   *  ada endpoint upload terpisah di backend (lihat resolvePhotoForSubmit). */
+  async uploadPhoto(){ return fail("Tidak dipakai — foto disematkan langsung ke data anggota."); },
+  async getStats(){
+    await delay(30);
+    const total = MEMBERS.length;
+    const laki = MEMBERS.filter(m=>m.jenis_kelamin==="L").length;
+    const perempuan = MEMBERS.filter(m=>m.jenis_kelamin==="P").length;
+    const gens = computeGenerations();
+    const genCount = new Set(Object.values(gens)).size;
+    const pasangan = MEMBERS.filter(m=>m.spouse_id).length / 2;
+    return ok({total, laki, perempuan, genCount, pasangan});
+  },
+  async searchMembers(q){
+    await delay(30);
+    q = q.trim().toLowerCase();
+    if(!q) return ok([]);
+    const gens = computeGenerations();
+    const res = MEMBERS.filter(m =>
+      m.nama_lengkap.toLowerCase().includes(q) ||
+      (m.pekerjaan||"").toLowerCase().includes(q) ||
+      (m.tempat_lahir||"").toLowerCase().includes(q) ||
+      ("generasi "+gens[m.id]).includes(q)
+    );
+    return ok(res);
+  }
+};
+function ok(data){ return {success:true, message:"OK", data}; }
+function fail(message){ return {success:false, message, data:null}; }
+function delay(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+/**
+ * gasGet/gasPost — dipakai hanya saat APP_CONFIG.USE_MOCK = false.
+ * POST dikirim dgn Content-Type "text/plain" supaya tidak memicu
+ * preflight CORS OPTIONS (GAS Web App tidak bisa membalas preflight).
+ *
+ * Aksi tulis (tambah/ubah/hapus) memerlukan kunci admin bersama yang
+ * diatur lewat setAdminKey() di Apps Script (lihat backend/Code.gs).
+ * Kunci diminta sekali lewat modal, lalu disimpan di localStorage HP
+ * masing-masing pengguna — tidak perlu login akun.
+ */
+const EDIT_PASSWORD_KEY = "sbb_admin_key";
+const WRITE_ACTIONS = ["add", "update", "delete"];
+
+function showPasswordModal(){
+  return new Promise((resolve)=>{
+    const sheet = document.getElementById("modalSheet");
+    sheet.innerHTML = `
+      <div class="sheet-handle"></div>
+      <div class="confirm-box">
+        <h3>Masukkan Kunci Admin</h3>
+        <p>Diperlukan untuk menambah, mengubah, atau menghapus anggota keluarga. Tanyakan kunci ini ke admin keluarga.</p>
+        <div class="form-group" style="text-align:left; margin-top:14px; margin-bottom:0;">
+          <input type="password" id="editPasswordInput" placeholder="Kunci admin" autocomplete="current-password">
+        </div>
+        <div class="confirm-actions">
+          <button class="btn-outline" id="btnCancelPassword">Batal</button>
+          <button class="btn-primary" id="btnSavePassword">Simpan &amp; Lanjutkan</button>
+        </div>
+      </div>
+    `;
+    document.getElementById("modalOverlay").classList.add("active");
+    const input = document.getElementById("editPasswordInput");
+    setTimeout(()=> input.focus(), 50);
+    function cleanup(){ document.getElementById("modalOverlay").classList.remove("active"); }
+    document.getElementById("btnCancelPassword").addEventListener("click", ()=>{ cleanup(); resolve(null); });
+    document.getElementById("btnSavePassword").addEventListener("click", ()=>{
+      const val = input.value.trim();
+      if(!val){ toast("Kunci admin tidak boleh kosong.", "error"); return; }
+      localStorage.setItem(EDIT_PASSWORD_KEY, val);
+      cleanup();
+      resolve(val);
+    });
+    input.addEventListener("keydown", (e)=>{ if(e.key==="Enter") document.getElementById("btnSavePassword").click(); });
+  });
+}
+async function gasGet(){
+  try{
+    const url = new URL(APP_CONFIG.API_URL);
+    url.searchParams.set('action', 'list');
+    url.searchParams.set('entity', 'anggota');
+    const res = await fetch(url.toString(), { cache: 'no-store' });
+    const text = await res.text();
+    return JSON.parse(text);
+  }catch(err){
+    return fail("Data belum dapat dimuat. Periksa koneksi atau API_URL di assets/config.js.");
+  }
+}
+async function gasPost(body){
+  if(WRITE_ACTIONS.includes(body.action)){
+    let pwd = localStorage.getItem(EDIT_PASSWORD_KEY);
+    if(!pwd){
+      pwd = await showPasswordModal();
+      if(pwd===null) return fail("Dibatalkan — kunci admin diperlukan untuk melanjutkan.");
+    }
+    body.key = pwd;
+  }
+  try{
+    const res = await fetch(APP_CONFIG.API_URL, {
+      method: 'POST',
+      headers: {'Content-Type':'text/plain;charset=utf-8'},
+      body: JSON.stringify(body)
+    });
+    const json = await res.json();
+    if(!json.success && /kunci admin/i.test(json.message||"")){
+      localStorage.removeItem(EDIT_PASSWORD_KEY); // salah kunci → minta ulang lain kali
+    }
+    return json;
+  }catch(err){
+    return fail("Terjadi kesalahan. Periksa koneksi atau API_URL di assets/config.js.");
+  }
+}
+
+/* =========================================================
+   UTILS — relasi keluarga & generasi
+   ========================================================= */
+function getMemberById(id){ return MEMBERS.find(m=>m.id===id); }
+function getSpouse(m){ return m.spouse_id ? getMemberById(m.spouse_id) : null; }
+function getChildren(id){ return MEMBERS.filter(m=>m.father_id===id || m.mother_id===id); }
+function getSiblings(m){
+  return MEMBERS.filter(x => x.id!==m.id && (
+    (m.father_id && x.father_id===m.father_id) || (m.mother_id && x.mother_id===m.mother_id)
+  ));
+}
+function computeGenerations(){
+  const map = {};
+  function genOf(id, chain){
+    if(map[id]) return map[id];
+    if(chain.includes(id)) return 1; // guard: cegah infinite loop pada data siklik
+    const m = getMemberById(id);
+    if(!m) return 1;
+    if(!m.father_id && !m.mother_id){ map[id]=1; return 1; }
+    const c = chain.concat(id);
+    const fg = m.father_id ? genOf(m.father_id, c) : 0;
+    const mg = m.mother_id ? genOf(m.mother_id, c) : 0;
+    const g = Math.max(fg, mg) + 1;
+    map[id] = g;
+    return g;
+  }
+  MEMBERS.forEach(m=>genOf(m.id, []));
+  return map;
+}
+function initials(name){
+  return name.split(" ").filter(Boolean).slice(0,2).map(w=>w[0]).join("").toUpperCase();
+}
+function ageOf(m){
+  if(!m.tanggal_lahir) return null;
+  const end = m.tanggal_wafat ? new Date(m.tanggal_wafat) : new Date();
+  const b = new Date(m.tanggal_lahir);
+  let age = end.getFullYear() - b.getFullYear();
+  const md = end.getMonth() - b.getMonth();
+  if(md < 0 || (md===0 && end.getDate() < b.getDate())) age--;
+  return age;
+}
+function fmtDate(s){
+  if(!s) return "-";
+  const d = new Date(s);
+  return d.toLocaleDateString("id-ID", {day:"numeric", month:"long", year:"numeric"});
+}
+function avatarHTML(m, size){
+  const cls = "avatar g-" + m.jenis_kelamin + (m.status_hidup==="Wafat" ? " deceased":"");
+  const s = size || 44;
+  const inits = initials(m.nama_lengkap);
+  if(m.foto){
+    return `<div class="${cls}" style="width:${s}px;height:${s}px;font-size:${Math.round(s*0.34)}px;">
+      <img src="${m.foto}" alt="${m.nama_lengkap}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;"
+        onerror="this.parentElement.innerHTML='${inits}';">
+    </div>`;
+  }
+  return `<div class="${cls}" style="width:${s}px;height:${s}px;font-size:${Math.round(s*0.34)}px;">${inits}</div>`;
+}
+function icon(name, extra){
+  const paths = {
+    phone:'<path d="M4.5 5c0-.7.5-1.2 1.2-1.2h2.4l1.6 4-1.7 1.1a10.2 10.2 0 0 0 4.7 4.7l1.1-1.7 4 1.6v2.4c0 .7-.5 1.2-1.2 1.2C9.9 17.1 3.9 11.1 4.5 5Z"/>',
+    mail:'<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M4 7l8 6 8-6"/>',
+    calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/>',
+    briefcase:'<rect x="3" y="8" width="18" height="12" rx="2"/><path d="M8 8V6a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+    mapPin:'<path d="M12 21s7-6.5 7-11a7 7 0 1 0-14 0c0 4.5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.4"/>',
+    school:'<path d="M12 4 2 9l10 5 10-5-10-5Z"/><path d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"/>',
+    user:'<circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-7 8-7s8 3 8 7"/>',
+    users2:'<circle cx="9" cy="8" r="3"/><path d="M3 20c0-3 3-5 6-5s6 2 6 5"/><circle cx="17" cy="9" r="2.3"/><path d="M15 20c.3-2 1.8-3.4 4-3.7"/>',
+    heart:'<path d="M12 20s-7-4.4-9.3-8.7C1.3 8.3 3 5 6.3 5c1.8 0 3.2 1 3.7 2.4C10.5 6 11.9 5 13.7 5 17 5 18.7 8.3 17.3 11.3 15 15.6 8 20 8 20Z" transform="translate(4,0) scale(.8)"/>',
+    edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+    trash:'<path d="M4 7h16"/><path d="M10 11v6M14 11v6"/><path d="M6 7l1 13a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1l1-13"/><path d="M9 7V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3"/>',
+    eye:'<path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/>',
+    check:'<path d="M20 6 9 17l-5-5"/>',
+    alert:'<circle cx="12" cy="12" r="10"/><path d="M12 8v5M12 16h.01"/>',
+    inbox:'<path d="M3 12h4l2 3h6l2-3h4"/><path d="M5 4h14l2 8v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-6l2-8Z"/>'
+  };
+  return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" ${extra||""}>${paths[name]||""}</svg>`;
+}
+function toast(msg, type){
+  const stack = document.getElementById("toastStack");
+  const el = document.createElement("div");
+  el.className = "toast" + (type==="error" ? " error":"");
+  el.innerHTML = (type==="error" ? icon("alert") : icon("check")) + `<span>${msg}</span>`;
+  stack.appendChild(el);
+  setTimeout(()=>{ el.style.transition="opacity .25s"; el.style.opacity="0"; setTimeout(()=>el.remove(),250); }, 2400);
+}
+
+/* =========================================================
+   NAVIGASI
+   ========================================================= */
+const TITLES = {
+  dashboard:{eyebrow:"Selamat datang", title:"Dashboard"},
+  silsilah:{eyebrow:"Pohon keluarga", title:"Silsilah"},
+  anggota:{eyebrow:"Kelola data", title:"Anggota Keluarga"},
+  tambah:{eyebrow:"Data baru", title:"Tambah Anggota"},
+  cari:{eyebrow:"Temukan siapa saja", title:"Pencarian"}
+};
+let currentScreen = "dashboard";
+
+function goTo(name){
+  document.querySelectorAll(".screen").forEach(s=>s.classList.remove("active"));
+  document.getElementById("screen-"+name).classList.add("active");
+  document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active", b.dataset.nav===name));
+  document.getElementById("topEyebrow").textContent = TITLES[name].eyebrow;
+  document.getElementById("topTitle").textContent = TITLES[name].title;
+  document.getElementById("backBtn").style.display = "none";
+  currentScreen = name;
+  if(name==="dashboard") renderDashboard();
+  if(name==="silsilah") renderTree();
+  if(name==="anggota") renderMembers();
+  if(name==="tambah") { applyFormPreset(); }
+  if(name==="cari") { document.getElementById("searchInput").focus(); }
+}
+document.querySelectorAll("[data-nav]").forEach(el=>{
+  el.addEventListener("click", ()=> goTo(el.dataset.nav));
+});
+
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
+async function renderDashboard(){
+  const grid = document.getElementById("statGrid");
+  grid.innerHTML = `<div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div><div class="skel skel-card"></div>`;
+  await api.getMembers(); // pastikan MEMBERS segar dari Spreadsheet sebelum hitung statistik & generasi
+  const {data: stats} = await api.getStats();
+  grid.innerHTML = `
+    <div class="stat-card"><div class="num">${stats.total}</div><div class="lbl">Total Anggota</div></div>
+    <div class="stat-card"><div class="num">${stats.pasangan}</div><div class="lbl">Jumlah Pasangan</div></div>
+    <div class="stat-card"><div class="num">${stats.laki}</div><div class="lbl">Laki-laki</div></div>
+    <div class="stat-card"><div class="num">${stats.perempuan}</div><div class="lbl">Perempuan</div></div>
+    <div class="stat-card wide"><div><div class="lbl" style="margin-top:0">Jumlah Generasi</div><div class="num">${stats.genCount}</div></div>${icon("users2",'style="width:30px;height:30px;color:var(--primary)"')}</div>
+  `;
+
+  const gens = computeGenerations();
+  const genCounts = {};
+  Object.values(gens).forEach(g=> genCounts[g] = (genCounts[g]||0)+1);
+  const maxCount = Math.max(...Object.values(genCounts));
+  const genList = document.getElementById("genList");
+  genList.innerHTML = Object.keys(genCounts).sort((a,b)=>a-b).map(g=>`
+    <div class="gen-row">
+      <div class="gen-badge">G${g}</div>
+      <div class="gen-bar-track"><div class="gen-bar-fill" style="width:${(genCounts[g]/maxCount*100).toFixed(0)}%"></div></div>
+      <div class="gen-count">${genCounts[g]} orang</div>
+    </div>
+  `).join("");
+
+  const recent = MEMBERS.slice(-6).reverse();
+  document.getElementById("recentList").innerHTML = recent.map(m=>`
+    <div class="mini-member" data-open="${m.id}">
+      ${avatarHTML(m,50)}
+      <div class="name">${m.nama_lengkap}</div>
+      <div class="sub">Gen ${gens[m.id]}</div>
+    </div>
+  `).join("");
+  bindOpenProfile();
+}
+
+/* =========================================================
+   ANGGOTA (list)
+   ========================================================= */
+let activeFilter = "semua";
+const FILTERS = [
+  {key:"semua", label:"Semua"},
+  {key:"L", label:"Laki-laki"},
+  {key:"P", label:"Perempuan"},
+  {key:"Hidup", label:"Hidup"},
+  {key:"Wafat", label:"Almarhum"}
+];
+function renderFilterChips(){
+  document.getElementById("memberFilters").innerHTML = FILTERS.map(f=>
+    `<button class="chip ${activeFilter===f.key?'active':''}" data-filter="${f.key}">${f.label}</button>`
+  ).join("");
+  document.querySelectorAll("[data-filter]").forEach(b=>{
+    b.addEventListener("click", ()=>{ activeFilter=b.dataset.filter; renderMembers(); });
+  });
+}
+async function renderMembers(){
+  renderFilterChips();
+  const list = document.getElementById("memberList");
+  list.innerHTML = `<div class="skel skel-row"></div><div class="skel skel-row"></div><div class="skel skel-row"></div>`;
+  const {data: members} = await api.getMembers();
+  const gens = computeGenerations();
+  let filtered = members;
+  if(activeFilter==="L" || activeFilter==="P") filtered = members.filter(m=>m.jenis_kelamin===activeFilter);
+  if(activeFilter==="Hidup" || activeFilter==="Wafat") filtered = members.filter(m=>m.status_hidup===activeFilter);
+
+  if(filtered.length===0){
+    list.innerHTML = emptyStateHTML("Belum ada anggota keluarga.", "Tambahkan anggota pertama untuk memulai silsilah.");
+    return;
+  }
+  list.innerHTML = filtered.map(m=>{
+    const spouse = getSpouse(m);
+    return `
+    <div class="member-row">
+      <div data-open="${m.id}" style="display:flex; align-items:center; gap:12px; flex:1; min-width:0;">
+        ${avatarHTML(m,46)}
+        <div class="member-info">
+          <div class="name">${m.nama_lengkap}</div>
+          <div class="meta">
+            <span class="status-dot ${m.status_hidup==='Hidup'?'hidup':'wafat'}"></span>
+            ${m.jenis_kelamin==='L'?'Laki-laki':'Perempuan'} &middot; Gen ${gens[m.id]}
+            ${spouse ? ' &middot; m. '+spouse.nama_lengkap : ''}
+          </div>
+        </div>
+      </div>
+      <div class="row-actions">
+        <button class="icon-btn" data-open="${m.id}">${icon("eye")}</button>
+        <button class="icon-btn danger" data-del="${m.id}">${icon("trash")}</button>
+      </div>
+    </div>`;
+  }).join("");
+  bindOpenProfile();
+  document.querySelectorAll("[data-del]").forEach(b=>{
+    b.addEventListener("click", (e)=>{ e.stopPropagation(); confirmDelete(b.dataset.del); });
+  });
+}
+function emptyStateHTML(title, sub, showRetry){
+  return `<div class="empty-state">${icon("inbox")}<div class="t">${title}</div><div>${sub}</div>${showRetry?`<button class="retry-btn" onclick="renderMembers()">Coba Lagi</button>`:''}</div>`;
+}
+
+/* =========================================================
+   TAMBAH ANGGOTA — form + validasi
+   ========================================================= */
+async function populateFamilySelects(){
+  if(!APP_CONFIG.USE_MOCK) await api.getMembers(); // sinkronkan MEMBERS dgn Spreadsheet
+  const opts = MEMBERS.map(m=>`<option value="${m.id}">${m.nama_lengkap} (${m.nama_panggilan||m.id})</option>`).join("");
+  document.getElementById("f-ayah").innerHTML = `<option value="">Tidak ada / tidak diketahui</option>` + MEMBERS.filter(m=>m.jenis_kelamin==="L").map(m=>`<option value="${m.id}">${m.nama_lengkap}</option>`).join("");
+  document.getElementById("f-ibu").innerHTML = `<option value="">Tidak ada / tidak diketahui</option>` + MEMBERS.filter(m=>m.jenis_kelamin==="P").map(m=>`<option value="${m.id}">${m.nama_lengkap}</option>`).join("");
+  document.getElementById("f-pasangan").innerHTML = `<option value="">Tidak ada / belum menikah</option>` + opts;
+}
+
+/* ---------- Tambah Anak / Tambah Pasangan dari kartu keluarga ---------- */
+let formPreset = null; // diisi oleh startAddChild()/startAddSpouse(), dibaca sekali oleh applyFormPreset()
+
+function showFormBanner(text){
+  const el = document.getElementById("formContextBanner");
+  el.innerHTML = `${icon("users2")}<span>${text}</span>`;
+  el.style.display = "flex";
+}
+function hideFormBanner(){
+  const el = document.getElementById("formContextBanner");
+  el.style.display = "none";
+  el.innerHTML = "";
+}
+let editingMemberId = null; // diisi oleh startEditMember(); null berarti mode Tambah
+
+async function applyFormPreset(){
+  await populateFamilySelects();
+  hideFormBanner();
+  if(!formPreset){
+    editingMemberId = null;
+    setFormMode();
+    return;
+  }
+  const p = formPreset; formPreset = null;
+  editingMemberId = p.editId || null;
+
+  const fieldMap = {
+    nama_lengkap:"f-nama", jenis_kelamin:"f-gender",
+    tempat_lahir:"f-tempat", tanggal_lahir:"f-tgl", status_hidup:"f-status",
+    tanggal_wafat:"f-tglwafat", pekerjaan:"f-pekerjaan",
+    alamat:"f-alamat", catatan:"f-catatan",
+    father_id:"f-ayah", mother_id:"f-ibu", spouse_id:"f-pasangan"
+  };
+  Object.keys(fieldMap).forEach(key=>{
+    if(p[key] !== undefined && p[key] !== null && p[key] !== ""){
+      document.getElementById(fieldMap[key]).value = p[key];
+    }
+  });
+  if(p.status_hidup === "Wafat") document.getElementById("fg-wafat").style.display = "block";
+  if(p.foto){
+    existingPhotoUrl = p.foto;
+    document.getElementById("photoPreview").innerHTML = `<img src="${p.foto}" alt="Foto">`;
+    document.getElementById("btnRemovePhoto").style.display = "inline-block";
+  }
+  if(p.bannerText) showFormBanner(p.bannerText);
+  setFormMode();
+}
+function setFormMode(){
+  document.getElementById("submitBtn").textContent = editingMemberId ? "Simpan Perubahan" : "Simpan Anggota";
+  document.getElementById("topTitle").textContent = editingMemberId ? "Edit Anggota" : "Tambah Anggota";
+  document.getElementById("topEyebrow").textContent = editingMemberId ? "Ubah data" : "Data baru";
+}
+function resetAddForm(){
+  document.getElementById("addForm").reset();
+  document.getElementById("fg-wafat").style.display = "none";
+  resetPhotoPicker();
+  hideFormBanner();
+}
+function startAddChild(parentId){
+  const parent = getMemberById(parentId);
+  if(!parent) return;
+  const spouse = getSpouse(parent);
+  resetAddForm();
+  formPreset = {
+    bannerText: `Menambahkan anak dari ${parent.nama_panggilan||parent.nama_lengkap}${spouse ? ' & '+(spouse.nama_panggilan||spouse.nama_lengkap) : ''}.`
+  };
+  if(parent.jenis_kelamin === "L"){ formPreset.father_id = parent.id; if(spouse) formPreset.mother_id = spouse.id; }
+  else { formPreset.mother_id = parent.id; if(spouse) formPreset.father_id = spouse.id; }
+  closeModal();
+  goTo("tambah");
+}
+function startAddSpouse(personId){
+  const person = getMemberById(personId);
+  if(!person) return;
+  resetAddForm();
+  formPreset = {
+    spouse_id: person.id,
+    jenis_kelamin: person.jenis_kelamin === "L" ? "P" : "L",
+    bannerText: `Menambahkan pasangan untuk ${person.nama_panggilan||person.nama_lengkap}.`
+  };
+  closeModal();
+  goTo("tambah");
+}
+function startEditMember(id){
+  const m = getMemberById(id);
+  if(!m) return;
+  resetAddForm();
+  formPreset = Object.assign({}, m, {
+    editId: m.id,
+    bannerText: `Mengedit data ${m.nama_panggilan||m.nama_lengkap}.`
+  });
+  closeModal();
+  goTo("tambah");
+}
+/** Menu aksi singkat saat tombol "+" di kartu pohon silsilah diketuk. */
+function openQuickAddMenu(id){
+  const m = getMemberById(id);
+  if(!m) return;
+  const sheet = document.getElementById("modalSheet");
+  sheet.innerHTML = `
+    <div class="sheet-handle"></div>
+    <div class="confirm-box" style="text-align:left;">
+      <h3 style="text-align:center;">Tambah untuk ${m.nama_panggilan||m.nama_lengkap}</h3>
+      <div class="quick-add-list">
+        <button class="qa-btn" id="qaAddChild"><span class="ic">${icon("users2")}</span> Tambah Anak</button>
+        ${!m.spouse_id ? `<button class="qa-btn" id="qaAddSpouse"><span class="ic">${icon("heart")}</span> Tambah Pasangan</button>` : ''}
+      </div>
+      <button class="btn-outline" id="qaCancel" style="width:100%; margin-top:14px;">Batal</button>
+    </div>
+  `;
+  document.getElementById("modalOverlay").classList.add("active");
+  document.getElementById("qaAddChild").addEventListener("click", ()=> startAddChild(id));
+  const spouseBtn = document.getElementById("qaAddSpouse");
+  if(spouseBtn) spouseBtn.addEventListener("click", ()=> startAddSpouse(id));
+  document.getElementById("qaCancel").addEventListener("click", closeModal);
+}
+
+/* ---------- Photo picker logic ---------- */
+let selectedPhotoDataUrl = null; // dipakai langsung di mode mock; di produksi diunggah via api.uploadPhoto()
+let selectedPhotoMime = "image/jpeg";
+let existingPhotoUrl = ""; // foto anggota yang sedang diedit (dipakai kalau foto tidak diganti)
+const MAX_RAW_PHOTO_BYTES = 20 * 1024 * 1024; // batas file mentah sebelum dikompres (kamera HP bisa 5-10MB)
+const PHOTO_MAX_DIMENSION = 1280; // px, sisi terpanjang setelah dikompres
+const PHOTO_QUALITY = 0.82;
+document.getElementById("btnPickPhoto").addEventListener("click", ()=> document.getElementById("f-foto").click());
+document.getElementById("f-foto").addEventListener("change", (e)=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  if(!file.type.startsWith("image/")){
+    toast("File harus berupa gambar.", "error");
+    e.target.value = "";
+    return;
+  }
+  if(file.size > MAX_RAW_PHOTO_BYTES){
+    toast("Ukuran foto terlalu besar. Coba pilih foto lain.", "error");
+    e.target.value = "";
+    return;
+  }
+  compressImageFile(file, PHOTO_MAX_DIMENSION, PHOTO_QUALITY).then(dataUrl=>{
+    selectedPhotoDataUrl = dataUrl;
+    selectedPhotoMime = "image/jpeg";
+    document.getElementById("photoPreview").innerHTML = `<img src="${dataUrl}" alt="Pratinjau foto">`;
+    document.getElementById("btnRemovePhoto").style.display = "inline-block";
+  }).catch(()=>{
+    toast("Gagal memproses foto ini. Coba foto lain.", "error");
+    e.target.value = "";
+  });
+});
+/** Perkecil & kompres foto di browser HP dulu (kamera HP sering 3-10MB) sebelum diunggah, supaya jarang gagal karena ukuran. */
+function compressImageFile(file, maxDim, quality){
+  return new Promise((resolve, reject)=>{
+    const reader = new FileReader();
+    reader.onload = (ev)=>{
+      const img = new Image();
+      img.onload = ()=>{
+        let w = img.naturalWidth, h = img.naturalHeight;
+        if(w > maxDim || h > maxDim){
+          if(w >= h){ h = Math.round(h * maxDim / w); w = maxDim; }
+          else { w = Math.round(w * maxDim / h); h = maxDim; }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, w, h);
+        try{ resolve(canvas.toDataURL("image/jpeg", quality)); }
+        catch(err){ reject(err); }
+      };
+      img.onerror = reject;
+      img.src = ev.target.result;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+document.getElementById("btnRemovePhoto").addEventListener("click", ()=> resetPhotoPicker());
+function resetPhotoPicker(){
+  selectedPhotoDataUrl = null; existingPhotoUrl = "";
+  document.getElementById("f-foto").value = "";
+  document.getElementById("photoPreview").innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.5-7 8-7s8 3 8 7"/></svg>`;
+  document.getElementById("btnRemovePhoto").style.display = "none";
+}
+/**
+ * Di produksi (backend GAS asli), foto diunggah dulu ke Google Drive lewat
+ * api.uploadPhoto(), lalu URL hasilnya dipakai sebagai field `foto`.
+ * Di mode mock (tanpa backend), data URL dipakai langsung sebagai `foto`.
+ * Saat edit tanpa mengganti foto, foto lama (existingPhotoUrl) tetap dipakai.
+ */
+/**
+ * Foto disimpan sbg data URI JPEG terkompresi langsung di kolom Foto —
+ * tidak ada endpoint upload terpisah di backend Code.gs, jadi cukup
+ * pakai hasil kompresi di browser (selectedPhotoDataUrl) apa adanya.
+ */
+async function resolvePhotoForSubmit(){
+  if(!selectedPhotoDataUrl) return existingPhotoUrl || "";
+  return selectedPhotoDataUrl;
+}
+
+document.getElementById("f-status").addEventListener("change", (e)=>{
+  document.getElementById("fg-wafat").style.display = e.target.value==="Wafat" ? "block" : "none";
+});
+document.getElementById("addForm").addEventListener("submit", async (e)=>{
+  e.preventDefault();
+  let valid = true;
+  const clearErr = id => document.getElementById(id).classList.remove("error");
+  const setErr = id => { document.getElementById(id).classList.add("error"); valid=false; };
+  ["fg-nama","fg-gender","fg-tgl","fg-wafat"].forEach(clearErr);
+
+  const nama = document.getElementById("f-nama").value.trim();
+  const gender = document.getElementById("f-gender").value;
+  const tgl = document.getElementById("f-tgl").value;
+  const tglWafat = document.getElementById("f-tglwafat").value;
+  const status = document.getElementById("f-status").value;
+  const ayah = document.getElementById("f-ayah").value;
+  const ibu = document.getElementById("f-ibu").value;
+  const pasangan = document.getElementById("f-pasangan").value;
+
+  if(!nama) setErr("fg-nama");
+  if(!gender) setErr("fg-gender");
+  if(tgl && new Date(tgl) > new Date()) setErr("fg-tgl");
+  if(status==="Wafat" && tglWafat && tgl && new Date(tglWafat) < new Date(tgl)) setErr("fg-wafat");
+  if(ayah && ibu && ayah===ibu) { setErr("fg-ayah"); }
+
+  if(!valid){ toast("Periksa kembali data yang diisi.", "error"); return; }
+
+  const btn = document.getElementById("submitBtn");
+  btn.disabled = true; btn.textContent = "Mengunggah foto...";
+  const fotoUrl = await resolvePhotoForSubmit();
+  btn.textContent = editingMemberId ? "Menyimpan perubahan..." : "Menyimpan...";
+  const payload = {
+    foto: fotoUrl,
+    nama_lengkap:nama,
+    jenis_kelamin:gender,
+    tempat_lahir:document.getElementById("f-tempat").value.trim(),
+    tanggal_lahir:tgl,
+    tanggal_wafat: status==="Wafat" ? tglWafat : "",
+    status_hidup:status,
+    pekerjaan:document.getElementById("f-pekerjaan").value.trim(),
+    alamat:document.getElementById("f-alamat").value.trim(),
+    catatan:document.getElementById("f-catatan").value.trim(),
+    father_id:ayah, mother_id:ibu, spouse_id:pasangan
+  };
+  const res = editingMemberId
+    ? await api.updateMember(editingMemberId, payload)
+    : await api.addMember(payload);
+  btn.disabled = false;
+  if(res.success){
+    // sambungkan balik field pasangan pada sisi lain, spy relasi 2 arah
+    // (skema sheet cuma simpan 1 kolom Pasangan per orang, bukan otomatis 2 arah)
+    const savedId = editingMemberId || (res.data && res.data.id);
+    if(pasangan && savedId){
+      if(!APP_CONFIG.USE_MOCK) await api.getMembers();
+      const sp = getMemberById(pasangan);
+      if(sp && sp.spouse_id !== savedId){
+        await api.updateMember(pasangan, Object.assign({}, sp, {spouse_id: savedId}));
+      }
+    }
+    toast(editingMemberId ? "Data berhasil diperbarui." : "Anggota berhasil ditambahkan.");
+    editingMemberId = null;
+    resetAddForm();
+    setFormMode();
+    goTo("anggota");
+  } else {
+    setFormMode();
+    toast(res.message || "Terjadi kesalahan.", "error");
+  }
+});
+
+/* =========================================================
+   PENCARIAN
+   ========================================================= */
+let searchTimer;
+document.getElementById("searchInput").addEventListener("input", (e)=>{
+  clearTimeout(searchTimer);
+  const q = e.target.value;
+  searchTimer = setTimeout(()=> runSearch(q), 250);
+});
+async function runSearch(q){
+  const box = document.getElementById("searchResults");
+  if(!q.trim()){ box.innerHTML = ""; return; }
+  box.innerHTML = `<div class="skel skel-row"></div><div class="skel skel-row"></div>`;
+  const {data} = await api.searchMembers(q);
+  if(data.length===0){
+    box.innerHTML = emptyStateHTML("Tidak ditemukan", `Tidak ada anggota yang cocok dengan "${q}".`);
+    return;
+  }
+  const gens = computeGenerations();
+  box.innerHTML = `<div class="search-meta">${data.length} anggota ditemukan</div>` + data.map(m=>`
+    <div class="member-row" data-open="${m.id}">
+      ${avatarHTML(m,46)}
+      <div class="member-info">
+        <div class="name">${m.nama_lengkap}</div>
+        <div class="meta">${m.pekerjaan || 'Tidak ada pekerjaan'} &middot; Gen ${gens[m.id]}</div>
+      </div>
+    </div>
+  `).join("");
+  bindOpenProfile();
+}
+
+/* =========================================================
+   PROFIL (modal)
+   ========================================================= */
+function bindOpenProfile(){
+  document.querySelectorAll("[data-open]").forEach(el=>{
+    el.addEventListener("click", ()=> openProfile(el.dataset.open));
+  });
+}
+function relChipHTML(m, sublabel){
+  return `<div class="rel-chip" data-open="${m.id}">${avatarHTML(m,26)}<span>${m.nama_panggilan||m.nama_lengkap}${sublabel?` &middot; ${sublabel}`:''}</span></div>`;
+}
+function openProfile(id){
+  const m = getMemberById(id);
+  if(!m) return;
+  const gens = computeGenerations();
+  const spouse = getSpouse(m);
+  const father = m.father_id ? getMemberById(m.father_id) : null;
+  const mother = m.mother_id ? getMemberById(m.mother_id) : null;
+  const children = getChildren(m.id);
+  const siblings = getSiblings(m);
+  const age = ageOf(m);
+
+  const sheet = document.getElementById("modalSheet");
+  sheet.innerHTML = `
+    <div class="sheet-handle"></div>
+    <button class="modal-close" id="modalCloseBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
+    <div class="profile-head">
+      ${avatarHTML(m,84)}
+      <h2>${m.nama_lengkap}</h2>
+      <div class="sub">Generasi ${gens[m.id]}</div>
+      <span class="status-pill ${m.status_hidup==='Hidup'?'hidup':'wafat'}">${m.status_hidup==='Hidup' ? '● Hidup' : 'Almarhum/ah'}</span>
+    </div>
+    <div class="quick-add-row">
+      <button class="quick-add-chip" id="btnQuickAddChild">${icon("users2")} Tambah Anak</button>
+      ${!spouse ? `<button class="quick-add-chip" id="btnQuickAddSpouse">${icon("heart")} Tambah Pasangan</button>` : ''}
+    </div>
+    <div class="info-list">
+      <div class="info-item"><span class="ic">${icon("mapPin")}</span><div class="txt"><div class="l">Tempat &amp; Tanggal Lahir</div><div class="v">${m.tempat_lahir || '-'}, ${fmtDate(m.tanggal_lahir)}${age!==null?` (usia ${age})`:''}</div></div></div>
+      ${m.status_hidup==='Wafat' ? `<div class="info-item"><span class="ic">${icon("calendar")}</span><div class="txt"><div class="l">Tanggal Wafat</div><div class="v">${fmtDate(m.tanggal_wafat)}</div></div></div>` : ''}
+      <div class="info-item"><span class="ic">${icon("briefcase")}</span><div class="txt"><div class="l">Pekerjaan</div><div class="v">${m.pekerjaan || '-'}</div></div></div>
+      <div class="info-item"><span class="ic">${icon("mapPin")}</span><div class="txt"><div class="l">Alamat</div><div class="v">${m.alamat || '-'}</div></div></div>
+      ${m.nomor_telepon ? `<div class="info-item"><span class="ic">${icon("phone")}</span><div class="txt"><div class="l">Telepon</div><div class="v">${m.nomor_telepon}</div></div></div>` : ''}
+      ${m.email ? `<div class="info-item"><span class="ic">${icon("mail")}</span><div class="txt"><div class="l">Email</div><div class="v">${m.email}</div></div></div>` : ''}
+    </div>
+
+    <div class="rel-group"><div class="glabel">Orang Tua</div>
+      <div class="rel-chips">
+        ${father ? relChipHTML(father,'Ayah') : '<span style="font-size:13px;color:var(--muted)">Tidak diketahui</span>'}
+        ${mother ? relChipHTML(mother,'Ibu') : ''}
+      </div>
+    </div>
+    ${spouse ? `<div class="rel-group"><div class="glabel">Pasangan</div><div class="rel-chips">${relChipHTML(spouse)}</div></div>` : ''}
+    ${children.length ? `<div class="rel-group"><div class="glabel">Anak (${children.length})</div><div class="rel-chips">${children.map(c=>relChipHTML(c)).join('')}</div></div>` : ''}
+    ${siblings.length ? `<div class="rel-group"><div class="glabel">Saudara (${siblings.length})</div><div class="rel-chips">${siblings.map(s=>relChipHTML(s)).join('')}</div></div>` : ''}
+
+    <div class="profile-actions">
+      <button class="btn-outline" id="btnViewTree"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2"/><circle cx="6" cy="12" r="2"/><circle cx="18" cy="12" r="2"/><path d="M12 6.5v2.3M11 8.6 7 10.5M13 8.6l4 1.9"/></svg> Lihat di Silsilah</button>
+      <button class="btn-primary" id="btnEditMember">${icon("edit")} Edit</button>
+      <button class="btn-danger" id="btnDeleteMember">${icon("trash")}</button>
+    </div>
+  `;
+  document.getElementById("modalOverlay").classList.add("active");
+  document.getElementById("modalCloseBtn").addEventListener("click", closeModal);
+  document.getElementById("btnQuickAddChild").addEventListener("click", ()=> startAddChild(id));
+  const quickSpouseBtn = document.getElementById("btnQuickAddSpouse");
+  if(quickSpouseBtn) quickSpouseBtn.addEventListener("click", ()=> startAddSpouse(id));
+  document.querySelectorAll("#modalSheet [data-open]").forEach(el=>{
+    el.addEventListener("click", ()=> openProfile(el.dataset.open));
+  });
+  document.getElementById("btnViewTree").addEventListener("click", ()=>{ closeModal(); goTo("silsilah"); setTimeout(()=>focusOnMember(id), 60); });
+  document.getElementById("btnEditMember").addEventListener("click", ()=>{ startEditMember(id); });
+  document.getElementById("btnDeleteMember").addEventListener("click", ()=>{ closeModal(); confirmDelete(id); });
+}
+function closeModal(){ document.getElementById("modalOverlay").classList.remove("active"); }
+document.getElementById("modalOverlay").addEventListener("click", (e)=>{ if(e.target.id==="modalOverlay") closeModal(); });
+
+/* ---------- Konfirmasi hapus ---------- */
+function confirmDelete(id){
+  const m = getMemberById(id);
+  if(!m) return;
+  const hasFamily = m.spouse_id || getChildren(id).length>0;
+  const sheet = document.getElementById("modalSheet");
+  sheet.innerHTML = `
+    <div class="sheet-handle"></div>
+    <div class="confirm-box">
+      <h3>Yakin ingin menghapus ${m.nama_lengkap}?</h3>
+      <p>Menghapus anggota dapat memengaruhi hubungan keluarga pada silsilah.</p>
+      ${hasFamily ? `<div class="warn">Anggota ini memiliki ${m.spouse_id?'pasangan':''}${m.spouse_id && getChildren(id).length?' dan ':''}${getChildren(id).length?'anak':''} yang tertaut. Tautan relasi akan dilepas.</div>` : ''}
+      <div class="confirm-actions">
+        <button class="btn-outline" id="btnCancelDel">Batal</button>
+        <button class="btn-danger" id="btnConfirmDel">Hapus</button>
+      </div>
+    </div>
+  `;
+  document.getElementById("modalOverlay").classList.add("active");
+  document.getElementById("btnCancelDel").addEventListener("click", closeModal);
+  document.getElementById("btnConfirmDel").addEventListener("click", async ()=>{
+    const res = await api.deleteMember(id);
+    closeModal();
+    if(res.success){ toast("Anggota berhasil dihapus."); refreshCurrentScreen(); }
+    else toast(res.message || "Terjadi kesalahan.", "error");
+  });
+}
+function refreshCurrentScreen(){
+  if(currentScreen==="dashboard") renderDashboard();
+  if(currentScreen==="anggota") renderMembers();
+  if(currentScreen==="silsilah") renderTree();
+}
+
+/* =========================================================
+   SILSILAH — tree dinamis (SVG), pan & zoom, expand/collapse
+   ========================================================= */
+const TREE = { scale:1, tx:40, ty:40, collapsed:new Set(), focusId:null };
+let crossLinks = []; // link ortu->anak yg "terpotong" krn dedup pasangan (lihat buildUnit)
+const NODE_W_SINGLE = 116, NODE_W_PAIR = 210, NODE_H = 78, GAP_X = 46, GAP_Y = 110;
+
+function buildForest(){
+  const placed = new Set(); // seluruh id yang sudah tampil sbg kartu, di cabang manapun
+  crossLinks = []; // reset — diisi ulang tiap buildForest() dipanggil
+  const roots = MEMBERS.filter(m => !m.father_id && !m.mother_id);
+  const rootUnits = [];
+  roots.forEach(m=>{
+    if(placed.has(m.id)) return; // sudah tampil (mis. sbg pasangan root lain)
+    const spouse = getSpouse(m);
+    const unit = buildUnit(m, spouse, new Set(), placed);
+    if(unit) rootUnits.push(unit);
+  });
+  return rootUnits;
+}
+function buildUnit(primary, spouse, ancestry, placed){
+  // Pasangan yang menikah "masuk" dari cabang keluarga lain akan tampil di
+  // cabang orang tuanya sendiri lebih dulu — cabang pasangannya cukup
+  // berhenti di sini agar tidak muncul dua kali di pohon yang sama.
+  if(placed.has(primary.id) || (spouse && placed.has(spouse.id))) return null;
+  placed.add(primary.id); if(spouse) placed.add(spouse.id);
+
+  const unit = { id: primary.id + (spouse?("_"+spouse.id):""), members: spouse? [primary,spouse] : [primary], children: [] };
+  const childIds = new Set();
+  getChildren(primary.id).forEach(c=>childIds.add(c.id));
+  if(spouse) getChildren(spouse.id).forEach(c=>childIds.add(c.id));
+  const newAncestry = new Set(ancestry); newAncestry.add(primary.id); if(spouse) newAncestry.add(spouse.id);
+  [...childIds].forEach(cid=>{
+    if(newAncestry.has(cid)) return; // guard siklik
+    const child = getMemberById(cid);
+    if(!child) return;
+    const childSpouse = getSpouse(child);
+    const childUnit = buildUnit(child, childSpouse, newAncestry, placed);
+    if(childUnit){
+      unit.children.push(childUnit);
+    } else if(placed.has(cid)){
+      // Anak ini sudah tergambar di cabang lain (menikah ke keluarga lain) —
+      // catat supaya digambar garis penghubung lintas-cabang, bukan hilang begitu saja.
+      crossLinks.push({ parentUnitId: unit.id, childId: cid });
+    }
+  });
+  return unit;
+}
+let leafCounter = 0;
+function layoutUnit(unit, depth){
+  unit.depth = depth;
+  const visibleChildren = TREE.collapsed.has(unit.id) ? [] : unit.children;
+  if(visibleChildren.length===0){
+    unit.x = leafCounter; leafCounter += 1;
+  } else {
+    visibleChildren.forEach(c=>layoutUnit(c, depth+1));
+    unit.x = (visibleChildren[0].x + visibleChildren[visibleChildren.length-1].x)/2;
+  }
+}
+/**
+ * Pass kedua: samakan jarak antar-SAUDARA di satu level (sama seperti jarak
+ * antar saudara yang sama-sama tidak punya keturunan), lalu geser seluruh
+ * cabang keturunan sbg satu blok utuh mengikuti pergeseran itu — supaya
+ * kartu yang sedang menampilkan anak tidak "menjauhkan" saudaranya sendiri.
+ */
+/**
+ * Pass kedua: rapatkan jarak antar-SAUDARA di satu level SEAMAN mungkin —
+ * pakai kontur (bentuk sebenarnya) tiap cabang, bukan sekadar indeks. Kalau
+ * dua saudara SAMA-SAMA punya keturunan yang berdekatan, jaraknya tetap
+ * dilebarkan seperlunya (supaya cucu-cucunya tidak tabrakan); kalau
+ * tetangganya "kosong" (tidak ada keturunan), jaraknya dirapatkan penuh.
+ */
+function computeContour(unit){
+  const vc = TREE.collapsed.has(unit.id) ? [] : unit.children;
+  if(vc.length===0){ unit.contourLeft=[0]; unit.contourRight=[0]; return; }
+  vc.forEach(c=>computeContour(c));
+  const leftContour=[0], rightContour=[0];
+  const maxDepth = Math.max(...vc.map(c=>c.contourLeft.length));
+  for(let d=0; d<maxDepth; d++){
+    let minL=Infinity, maxR=-Infinity;
+    vc.forEach(c=>{
+      if(d<c.contourLeft.length){
+        minL = Math.min(minL, (c.x - unit.x) + c.contourLeft[d]);
+        maxR = Math.max(maxR, (c.x - unit.x) + c.contourRight[d]);
+      }
+    });
+    leftContour.push(minL); rightContour.push(maxR);
+  }
+  unit.contourLeft = leftContour; unit.contourRight = rightContour;
+}
+function compactSiblings(units){
+  if(!units || units.length===0) return;
+  units.forEach(u=>computeContour(u));
+  let mergedRight = null;
+  units.forEach((u, idx)=>{
+    if(idx===0){
+      mergedRight = u.contourRight.map(v=> u.x + v);
+    } else {
+      let desiredX = units[idx-1].x + 1; // jarak minimum antar kartu di baris yg sama
+      const overlapLen = Math.min(mergedRight.length, u.contourLeft.length);
+      for(let d=0; d<overlapLen; d++){
+        const need = mergedRight[d] + 1 - u.contourLeft[d];
+        if(need > desiredX) desiredX = need;
+      }
+      const delta = desiredX - u.x;
+      if(delta !== 0) shiftSubtree(u, delta);
+      const newAbsRight = u.contourRight.map(v=> u.x + v);
+      const maxLen = Math.max(mergedRight.length, newAbsRight.length);
+      const merged = [];
+      for(let d=0; d<maxLen; d++){
+        const a = d<mergedRight.length ? mergedRight[d] : -Infinity;
+        const b = d<newAbsRight.length ? newAbsRight[d] : -Infinity;
+        merged.push(Math.max(a,b));
+      }
+      mergedRight = merged;
+    }
+  });
+  units.forEach(u=>{
+    const vc = TREE.collapsed.has(u.id) ? [] : u.children;
+    compactSiblings(vc);
+  });
+}
+function shiftSubtree(unit, delta){
+  unit.x += delta;
+  const visibleChildren = TREE.collapsed.has(unit.id) ? [] : unit.children;
+  visibleChildren.forEach(c=>shiftSubtree(c, delta));
+}
+function flattenUnits(unit, out){ out.push(unit); (TREE.collapsed.has(unit.id)?[]:unit.children).forEach(c=>flattenUnits(c,out)); return out; }
+
+async function renderTree(){
+  if(!APP_CONFIG.USE_MOCK) await api.getMembers(); // sinkronkan MEMBERS dgn Spreadsheet
+  const forest = buildForest();
+  leafCounter = 0;
+  forest.forEach((u,i)=>{ layoutUnit(u,0); leafCounter += 1; });
+  compactSiblings(forest);
+  let allUnits = [];
+  forest.forEach(u=>flattenUnits(u, allUnits));
+
+  const unitWidth = 190;
+  const xs = allUnits.map(u=>u.x);
+  const minX = Math.min(0, ...xs), maxX = Math.max(0, ...xs);
+  const totalW = Math.max((maxX - minX + 1) * unitWidth + 80, 400);
+  const maxDepth = Math.max(...allUnits.map(u=>u.depth), 0);
+  const totalH = (maxDepth+1) * (NODE_H+GAP_Y) + 80;
+
+  const svg = document.getElementById("treeSvg");
+  svg.setAttribute("width", totalW);
+  svg.setAttribute("height", totalH);
+  svg.innerHTML = "";
+
+  const g = document.createElementNS("http://www.w3.org/2000/svg","g");
+  g.setAttribute("id","treeG");
+  svg.appendChild(g);
+
+  // garis penghubung orang tua -> anak
+  allUnits.forEach(u=>{
+    const visibleChildren = TREE.collapsed.has(u.id) ? [] : u.children;
+    if(visibleChildren.length===0) return;
+    const px = 40 + (u.x - minX)*unitWidth + unitWidth/2;
+    const py = 40 + u.depth*(NODE_H+GAP_Y) + NODE_H;
+    const midY = py + GAP_Y/2;
+    visibleChildren.forEach(c=>{
+      const cx = 40 + (c.x - minX)*unitWidth + unitWidth/2;
+      const cy = 40 + c.depth*(NODE_H+GAP_Y);
+      const path = document.createElementNS("http://www.w3.org/2000/svg","path");
+      path.setAttribute("class","tree-link");
+      path.setAttribute("d", `M${px},${py} L${px},${midY} L${cx},${midY} L${cx},${cy}`);
+      g.appendChild(path);
+    });
+  });
+
+  // posisi kartu tiap orang (dipakai utk menggambar garis lintas-cabang di bawah)
+  const memberPos = {};
+  allUnits.forEach(u=>{
+    const baseX = 40 + (u.x - minX)*unitWidth;
+    const baseY = 40 + u.depth*(NODE_H+GAP_Y);
+    if(u.members.length===2){
+      memberPos[u.members[0].id] = { x: baseX, y: baseY };
+      memberPos[u.members[1].id] = { x: baseX+unitWidth-96, y: baseY };
+    } else {
+      memberPos[u.members[0].id] = { x: baseX + (unitWidth-96)/2, y: baseY };
+    }
+  });
+
+  // garis penghubung lintas-cabang: orang tua yg anaknya tergambar di cabang
+  // pasangannya (lihat buildUnit) — pakai garis putus-putus agar beda dgn
+  // garis keturunan langsung.
+  crossLinks.forEach(link=>{
+    const parentUnit = allUnits.find(u=>u.id===link.parentUnitId);
+    const childPos = memberPos[link.childId];
+    if(!parentUnit || !childPos) return;
+    if(TREE.collapsed.has(parentUnit.id)) return;
+    const px = 40 + (parentUnit.x - minX)*unitWidth + unitWidth/2;
+    const py = 40 + parentUnit.depth*(NODE_H+GAP_Y) + NODE_H;
+    const cx = childPos.x + 48;
+    const cy = childPos.y;
+    const midY = (py+cy)/2;
+    const path = document.createElementNS("http://www.w3.org/2000/svg","path");
+    path.setAttribute("class","tree-link cross-link");
+    path.setAttribute("d", `M${px},${py} C${px},${midY} ${cx},${midY} ${cx},${cy}`);
+    g.appendChild(path);
+  });
+
+  // unit cards
+  allUnits.forEach(u=>{
+    const baseX = 40 + (u.x - minX)*unitWidth;
+    const baseY = 40 + u.depth*(NODE_H+GAP_Y);
+    const wrap = document.createElementNS("http://www.w3.org/2000/svg","g");
+    wrap.setAttribute("class","unit-card" + (u.members.some(m=>m.id===TREE.focusId) ? " focused":""));
+    if(u.members.length===2){
+      const midx = baseX + unitWidth/2;
+      const line = document.createElementNS("http://www.w3.org/2000/svg","line");
+      line.setAttribute("class","spouse-link");
+      line.setAttribute("x1", baseX+96); line.setAttribute("x2", baseX+unitWidth-96);
+      line.setAttribute("y1", baseY+NODE_H/2); line.setAttribute("y2", baseY+NODE_H/2);
+      wrap.appendChild(line);
+      wrap.appendChild(personCard(u.members[0], baseX, baseY, u.id));
+      wrap.appendChild(personCard(u.members[1], baseX+unitWidth-96, baseY, u.id));
+    } else {
+      wrap.appendChild(personCard(u.members[0], baseX + (unitWidth-96)/2, baseY, u.id));
+    }
+    if(u.children.length>0){
+      const cx = baseX+unitWidth/2, cy = baseY+NODE_H+16;
+      const tg = document.createElementNS("http://www.w3.org/2000/svg","g");
+      tg.setAttribute("class","toggle-btn");
+      tg.setAttribute("transform", `translate(${cx},${cy})`);
+      tg.style.cursor = "pointer";
+      tg.innerHTML = `<circle r="9"/><text x="0" y="4" text-anchor="middle">${TREE.collapsed.has(u.id)?'+':'−'}</text>`;
+      tg.addEventListener("click", (e)=>{ e.stopPropagation(); if(TREE.collapsed.has(u.id)) TREE.collapsed.delete(u.id); else TREE.collapsed.add(u.id); renderTree(); });
+      wrap.appendChild(tg);
+    }
+    g.appendChild(wrap);
+  });
+
+  applyTransform();
+  if(TREE.focusId) centerOnFocus(totalW, totalH);
+}
+function personCard(m, x, y, unitId){
+  const grp = document.createElementNS("http://www.w3.org/2000/svg","g");
+  grp.setAttribute("transform", `translate(${x},${y})`);
+  grp.addEventListener("click", ()=> openProfile(m.id));
+  const rect = document.createElementNS("http://www.w3.org/2000/svg","rect");
+  rect.setAttribute("class","bg");
+  rect.setAttribute("width","96"); rect.setAttribute("height", NODE_H); rect.setAttribute("rx","14");
+  grp.appendChild(rect);
+  const circle = document.createElementNS("http://www.w3.org/2000/svg","circle");
+  circle.setAttribute("cx","48"); circle.setAttribute("cy","24"); circle.setAttribute("r","16");
+  circle.setAttribute("fill", m.jenis_kelamin==="L" ? "#A9762E" : "#7B3B33");
+  circle.setAttribute("opacity", m.status_hidup==="Wafat" ? "0.55" : "1");
+  grp.appendChild(circle);
+  if(m.foto){
+    const clipId = "clip-" + unitId + "-" + m.id;
+    const defs = document.createElementNS("http://www.w3.org/2000/svg","defs");
+    const clip = document.createElementNS("http://www.w3.org/2000/svg","clipPath");
+    clip.setAttribute("id", clipId);
+    const clipCircle = document.createElementNS("http://www.w3.org/2000/svg","circle");
+    clipCircle.setAttribute("cx","48"); clipCircle.setAttribute("cy","24"); clipCircle.setAttribute("r","16");
+    clip.appendChild(clipCircle); defs.appendChild(clip); grp.appendChild(defs);
+    const img = document.createElementNS("http://www.w3.org/2000/svg","image");
+    img.setAttributeNS("http://www.w3.org/1999/xlink","href", m.foto);
+    img.setAttribute("href", m.foto);
+    img.setAttribute("x","32"); img.setAttribute("y","8"); img.setAttribute("width","32"); img.setAttribute("height","32");
+    img.setAttribute("clip-path", `url(#${clipId})`);
+    img.setAttribute("preserveAspectRatio","xMidYMid slice");
+    grp.appendChild(img);
+  } else {
+    const initEl = document.createElementNS("http://www.w3.org/2000/svg","text");
+    initEl.setAttribute("x","48"); initEl.setAttribute("y","29"); initEl.setAttribute("text-anchor","middle");
+    initEl.setAttribute("fill","#fff"); initEl.setAttribute("font-size","11"); initEl.setAttribute("font-weight","700");
+    initEl.textContent = initials(m.nama_lengkap);
+    grp.appendChild(initEl);
+  }
+  const nameEl = document.createElementNS("http://www.w3.org/2000/svg","text");
+  nameEl.setAttribute("class","name"); nameEl.setAttribute("x","48"); nameEl.setAttribute("y","54");
+  nameEl.setAttribute("text-anchor","middle"); nameEl.setAttribute("font-size","10.5");
+  nameEl.textContent = truncate(m.nama_panggilan || m.nama_lengkap, 13);
+  grp.appendChild(nameEl);
+  const subEl = document.createElementNS("http://www.w3.org/2000/svg","text");
+  subEl.setAttribute("class","sub"); subEl.setAttribute("x","48"); subEl.setAttribute("y","67");
+  subEl.setAttribute("text-anchor","middle"); subEl.setAttribute("font-size","9");
+  subEl.textContent = (m.tanggal_lahir ? new Date(m.tanggal_lahir).getFullYear() : "?") + (m.status_hidup==="Wafat" ? " ✝" : "");
+  grp.appendChild(subEl);
+
+  const addBtn = document.createElementNS("http://www.w3.org/2000/svg","g");
+  addBtn.setAttribute("class","card-add-btn");
+  addBtn.setAttribute("transform","translate(87,9)");
+  addBtn.innerHTML = `<circle r="9" fill="#A9762E" stroke="#fff" stroke-width="1.6"/><path d="M-3.5 0h7M0 -3.5v7" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/>`;
+  addBtn.addEventListener("click", (e)=>{ e.stopPropagation(); openQuickAddMenu(m.id); });
+  grp.appendChild(addBtn);
+
+  return grp;
+}
+function truncate(s,n){ return s.length>n ? s.slice(0,n-1)+"…" : s; }
+function applyTransform(){
+  const g = document.getElementById("treeG");
+  if(g) g.setAttribute("transform", `translate(${TREE.tx},${TREE.ty}) scale(${TREE.scale})`);
+}
+function centerOnFocus(totalW, totalH){
+  const wrap = document.getElementById("treeWrap");
+  const vw = wrap.clientWidth, vh = wrap.clientHeight;
+  // cari posisi unit yang berisi focusId
+  let target = null;
+  document.querySelectorAll(".unit-card.focused").forEach(el=>{ target = el; });
+  if(!target) return;
+  const bbox = target.getBBox();
+  const cx = bbox.x + bbox.width/2, cy = bbox.y + bbox.height/2;
+  TREE.tx = vw/2 - cx*TREE.scale;
+  TREE.ty = vh/2 - cy*TREE.scale;
+  applyTransform();
+}
+function focusOnMember(id){ TREE.focusId = id; renderTree(); setTimeout(()=>{ TREE.focusId=null; },1600); }
+
+const TREE_MIN_SCALE = 0.4, TREE_MAX_SCALE = 2.5;
+document.getElementById("btnZoomIn").addEventListener("click", ()=>{ TREE.scale = Math.min(TREE.scale+0.15, TREE_MAX_SCALE); applyTransform(); });
+document.getElementById("btnZoomOut").addEventListener("click", ()=>{ TREE.scale = Math.max(TREE.scale-0.15, TREE_MIN_SCALE); applyTransform(); });
+document.getElementById("btnReset").addEventListener("click", ()=>{ TREE.scale=1; TREE.tx=40; TREE.ty=40; applyTransform(); });
+document.getElementById("btnFullscreen").addEventListener("click", ()=>{
+  const el = document.getElementById("appShell");
+  if(!document.fullscreenElement) el.requestFullscreen?.().catch(()=>{});
+  else document.exitFullscreen?.();
+});
+
+// Pan (mouse + touch)
+(function initPan(){
+  const wrap = document.getElementById("treeWrap");
+  let dragging=false, sx=0, sy=0, ox=0, oy=0;
+  function start(x,y){ dragging=true; sx=x; sy=y; ox=TREE.tx; oy=TREE.ty; }
+  function move(x,y){ if(!dragging) return; TREE.tx = ox + (x-sx); TREE.ty = oy + (y-sy); applyTransform(); }
+  function end(){ dragging=false; }
+  wrap.addEventListener("mousedown", e=>start(e.clientX,e.clientY));
+  window.addEventListener("mousemove", e=>move(e.clientX,e.clientY));
+  window.addEventListener("mouseup", end);
+
+  /** Zoom di titik (cx,cy) — relatif ke pojok kiri-atas #treeWrap — supaya titik itu tetap di tempat yang sama saat skala berubah (bukan melompat ke pojok). */
+  function zoomAt(cx, cy, factor){
+    const newScale = Math.min(Math.max(TREE.scale * factor, TREE_MIN_SCALE), TREE_MAX_SCALE);
+    const ratio = newScale / TREE.scale;
+    TREE.tx = cx - (cx - TREE.tx) * ratio;
+    TREE.ty = cy - (cy - TREE.ty) * ratio;
+    TREE.scale = newScale;
+    applyTransform();
+  }
+
+  // Zoom dengan scroll/roda mouse, mengarah ke posisi kursor.
+  wrap.addEventListener("wheel", (e)=>{
+    e.preventDefault();
+    const rect = wrap.getBoundingClientRect();
+    zoomAt(e.clientX - rect.left, e.clientY - rect.top, e.deltaY < 0 ? 1.12 : 1/1.12);
+  }, {passive:false});
+
+  // Sentuhan: 1 jari = geser (pan), 2 jari = cubit utk zoom (pinch-to-zoom).
+  let pinchActive = false, pinchStartDist = 0, pinchStartScale = 1, pinchMidX = 0, pinchMidY = 0;
+  function touchDist(t0, t1){ return Math.hypot(t1.clientX - t0.clientX, t1.clientY - t0.clientY); }
+  wrap.addEventListener("touchstart", (e)=>{
+    if(e.touches.length >= 2){
+      pinchActive = true; dragging = false;
+      const rect = wrap.getBoundingClientRect();
+      pinchStartDist = touchDist(e.touches[0], e.touches[1]);
+      pinchStartScale = TREE.scale;
+      pinchMidX = (e.touches[0].clientX + e.touches[1].clientX)/2 - rect.left;
+      pinchMidY = (e.touches[0].clientY + e.touches[1].clientY)/2 - rect.top;
+    } else if(e.touches.length === 1){
+      pinchActive = false;
+      const t = e.touches[0]; start(t.clientX, t.clientY);
+    }
+  }, {passive:true});
+  wrap.addEventListener("touchmove", (e)=>{
+    if(pinchActive && e.touches.length >= 2){
+      const dist = touchDist(e.touches[0], e.touches[1]);
+      if(pinchStartDist > 0){
+        const newScale = Math.min(Math.max(pinchStartScale * (dist / pinchStartDist), TREE_MIN_SCALE), TREE_MAX_SCALE);
+        const ratio = newScale / TREE.scale;
+        TREE.tx = pinchMidX - (pinchMidX - TREE.tx) * ratio;
+        TREE.ty = pinchMidY - (pinchMidY - TREE.ty) * ratio;
+        TREE.scale = newScale;
+        applyTransform();
+      }
+    } else if(!pinchActive && e.touches.length === 1){
+      const t = e.touches[0]; move(t.clientX, t.clientY);
+    }
+  }, {passive:true});
+  wrap.addEventListener("touchend", (e)=>{
+    if(e.touches.length < 2) pinchActive = false;
+    if(e.touches.length === 0) end();
+  });
+})();
+
+/* =========================================================
+   PWA — service worker + notifikasi instal ke layar utama
+   ========================================================= */
+if("serviceWorker" in navigator){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("service-worker.js").catch(()=>{
+      // Diam-diam gagal jika sw.js belum tersedia (mis. saat pratinjau lokal
+      // tanpa deploy penuh) — tidak memengaruhi fungsi utama aplikasi.
+    });
+  });
+}
+
+const INSTALL_DISMISS_KEY = "silsilah_bagong_install_dismissed_at";
+const INSTALL_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000; // jangan tampilkan lagi selama 7 hari setelah ditutup
+let deferredInstallPrompt = null;
+
+function isRunningStandalone(){
+  return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+}
+function wasRecentlyDismissed(){
+  const t = Number(localStorage.getItem(INSTALL_DISMISS_KEY) || 0);
+  return (Date.now() - t) < INSTALL_COOLDOWN_MS;
+}
+function showInstallBanner(subtext){
+  if(isRunningStandalone() || wasRecentlyDismissed()) return;
+  if(subtext) document.getElementById("installSub").textContent = subtext;
+  document.getElementById("installBanner").classList.add("active");
+}
+function hideInstallBanner(){
+  document.getElementById("installBanner").classList.remove("active");
+}
+document.getElementById("installDismiss").addEventListener("click", ()=>{
+  localStorage.setItem(INSTALL_DISMISS_KEY, String(Date.now()));
+  hideInstallBanner();
+});
+document.getElementById("installConfirm").addEventListener("click", async ()=>{
+  if(deferredInstallPrompt){
+    hideInstallBanner();
+    deferredInstallPrompt.prompt();
+    const choice = await deferredInstallPrompt.userChoice;
+    deferredInstallPrompt = null;
+    if(choice.outcome !== "accepted"){
+      localStorage.setItem(INSTALL_DISMISS_KEY, String(Date.now()));
+    }
+  } else {
+    // iOS Safari tidak punya prompt otomatis — tampilkan instruksi manual.
+    hideInstallBanner();
+    toast("Ketuk tombol Bagikan lalu pilih \"Tambah ke Layar Utama\".");
+  }
+});
+
+// Chrome/Edge/Android: event ini menandakan halaman memenuhi syarat utk diinstal.
+window.addEventListener("beforeinstallprompt", (e)=>{
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  setTimeout(()=> showInstallBanner("Tambahkan ke layar utama untuk akses lebih cepat, kapan saja."), 1200);
+});
+window.addEventListener("appinstalled", ()=>{
+  hideInstallBanner();
+  deferredInstallPrompt = null;
+  toast("Aplikasi berhasil diinstal.");
+});
+
+// iOS Safari tidak mendukung beforeinstallprompt — deteksi manual & beri instruksi.
+(function checkIosInstall(){
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if(isIos && !isRunningStandalone()){
+    setTimeout(()=> showInstallBanner("Ketuk ikon Bagikan di Safari, lalu pilih \"Tambah ke Layar Utama\"."), 1500);
+  }
+})();
+
+/* =========================================================
+   VIEWPORT FIX — cegah bottom nav tertutup toolbar browser mobile
+   =========================================================
+   1vh di banyak browser mobile dihitung dari tinggi viewport penuh
+   (termasuk area yang tertutup address bar/toolbar), bukan dari area
+   yang benar-benar terlihat. Ini membuat elemen yang menempel di
+   "bottom:0" (seperti bottom navigation) bisa berada di luar layar.
+   Kita hitung ulang lewat window.innerHeight yang selalu akurat.
+*/
+function setAppVh(){
+  document.documentElement.style.setProperty('--app-vh', (window.innerHeight * 0.01) + 'px');
+}
+setAppVh();
+window.addEventListener('resize', setAppVh);
+window.addEventListener('orientationchange', ()=> setTimeout(setAppVh, 150));
+if(window.visualViewport){
+  window.visualViewport.addEventListener('resize', setAppVh);
+}
+
+/* =========================================================
+   INISIALISASI
+   ========================================================= */
+renderDashboard();
+</script>
 </body>
 </html>
