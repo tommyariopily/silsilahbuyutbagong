@@ -2,7 +2,7 @@
   "name": "Silsilah Keluarga Buyut Bagong",
   "short_name": "Silsilah Bagong",
   "description": "Bagan silsilah Keluarga Besar Buyut Bagong — kartu suami & istri terpisah lengkap dengan foto dan info.",
-  "start_url": "./index.html",
+  "start_url": "./",
   "scope": "./",
   "id": "./",
   "display": "standalone",

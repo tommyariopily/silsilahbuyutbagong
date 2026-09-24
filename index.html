@@ -974,7 +974,7 @@ function goTo(name){
   document.getElementById("backBtn").style.display = "none";
   currentScreen = name;
   if(name==="dashboard") renderDashboard();
-  if(name==="silsilah") renderTree();
+  if(name==="silsilah"){ TREE.homed = false; renderTree(); }
   if(name==="anggota") renderMembers();
   if(name==="tambah") { applyFormPreset(); }
   if(name==="cari") { document.getElementById("searchInput").focus(); }
@@ -1507,7 +1507,7 @@ function refreshCurrentScreen(){
 /* =========================================================
    SILSILAH — tree dinamis (SVG), pan & zoom, expand/collapse
    ========================================================= */
-const TREE = { scale:1, tx:40, ty:40, collapsed:new Set(), focusId:null };
+const TREE = { scale:1, tx:40, ty:40, collapsed:new Set(), focusId:null, homed:false, totalW:0, totalH:0 };
 let crossLinks = []; // link ortu->anak yg "terpotong" krn dedup pasangan (lihat buildUnit)
 const NODE_W_SINGLE = 116, NODE_W_PAIR = 210, NODE_H = 78, GAP_X = 46, GAP_Y = 110;
 
@@ -1739,7 +1739,13 @@ async function renderTree(){
   });
 
   applyTransform();
-  if(TREE.focusId) centerOnFocus(totalW, totalH);
+  TREE.totalW = totalW; TREE.totalH = totalH;
+  if(TREE.focusId){
+    centerOnFocus(totalW, totalH);
+  } else if(!TREE.homed){
+    centerTreeHome();
+    TREE.homed = true;
+  }
 }
 function personCard(m, x, y, unitId){
   const grp = document.createElementNS("http://www.w3.org/2000/svg","g");
@@ -1814,12 +1820,25 @@ function centerOnFocus(totalW, totalH){
   TREE.ty = vh/2 - cy*TREE.scale;
   applyTransform();
 }
+/** Posisi "beranda" bagan: generasi awal langsung terlihat presisi di
+ *  tengah (horizontal), rata atas (vertikal) — dipakai saat tab Silsilah
+ *  pertama kali dibuka & saat tombol "Reset posisi" ditekan. */
+function centerTreeHome(){
+  const wrap = document.getElementById("treeWrap");
+  const vw = wrap.clientWidth, vh = wrap.clientHeight;
+  if(!vw || !vh || !TREE.totalW) return;
+  const fitScale = Math.min(1, (vw - 32) / TREE.totalW);
+  TREE.scale = Math.max(TREE_MIN_SCALE, Math.min(fitScale, TREE_MAX_SCALE));
+  TREE.tx = (vw - TREE.totalW*TREE.scale) / 2; // presisi di tengah horizontal
+  TREE.ty = 24; // generasi awal langsung terlihat di bagian paling atas
+  applyTransform();
+}
 function focusOnMember(id){ TREE.focusId = id; renderTree(); setTimeout(()=>{ TREE.focusId=null; },1600); }
 
 const TREE_MIN_SCALE = 0.4, TREE_MAX_SCALE = 2.5;
 document.getElementById("btnZoomIn").addEventListener("click", ()=>{ TREE.scale = Math.min(TREE.scale+0.15, TREE_MAX_SCALE); applyTransform(); });
 document.getElementById("btnZoomOut").addEventListener("click", ()=>{ TREE.scale = Math.max(TREE.scale-0.15, TREE_MIN_SCALE); applyTransform(); });
-document.getElementById("btnReset").addEventListener("click", ()=>{ TREE.scale=1; TREE.tx=40; TREE.ty=40; applyTransform(); });
+document.getElementById("btnReset").addEventListener("click", ()=>{ centerTreeHome(); });
 document.getElementById("btnFullscreen").addEventListener("click", ()=>{
   const el = document.getElementById("appShell");
   if(!document.fullscreenElement) el.requestFullscreen?.().catch(()=>{});
